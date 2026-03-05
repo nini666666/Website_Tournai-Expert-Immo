@@ -1,0 +1,22 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: tei-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./frontend:/usr/share/nginx/html
+    restart: unless-stopped
+  backend:
+    image: node:18-alpine
+    container_name: tei-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "npm install && node server.js"
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
