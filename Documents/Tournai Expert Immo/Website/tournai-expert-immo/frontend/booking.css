@@ -1,0 +1,714 @@
+/* ═══════════════════════════════════════════════
+   BOOKING WIZARD — Tournai Expert Immo
+   Thème : contact page (forêt nocturne / clair)
+═══════════════════════════════════════════════ */
+
+/* ─── Variables locales ─── */
+#bk-overlay {
+  --bk-bg:     #10212B;
+  --bk-ink:    #EFFBDB;
+  --bk-accent: #8FA464;
+  --bk-muted:  rgba(239,251,219,.45);
+  --bk-line:   rgba(143,164,100,.18);
+  --bk-card:   rgba(143,164,100,.06);
+  --bk-input:  rgba(239,251,219,.05);
+}
+
+body:not(.dark) #bk-overlay {
+  --bk-bg:     #EFFBDB;
+  --bk-ink:    #10212B;
+  --bk-accent: #8FA464;
+  --bk-muted:  rgba(16,33,43,.45);
+  --bk-line:   rgba(16,33,43,.12);
+  --bk-card:   rgba(16,33,43,.04);
+  --bk-input:  rgba(16,33,43,.05);
+}
+
+/* ─── Overlay ─── */
+.bk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s ease;
+}
+.bk-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Panel ─── */
+.bk-panel {
+  background: var(--bk-bg);
+  color: var(--bk-ink);
+  width: 100%;
+  max-width: 580px;
+  height: 88vh;
+  max-height: 680px;
+  min-height: 480px;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transform: translateY(28px);
+  transition: transform .45s cubic-bezier(.16,1,.3,1);
+  overflow: hidden;
+  pointer-events: none;
+}
+.bk-overlay.open .bk-panel {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ─── Bouton fermer ─── */
+.bk-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 10;
+  background: none;
+  border: none;
+  color: var(--bk-muted);
+  cursor: pointer;
+  padding: .4rem;
+  line-height: 0;
+  transition: color .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-close:hover { color: var(--bk-ink); }
+
+/* ─── Barre de progression ─── */
+.bk-progress-track {
+  height: 2px;
+  background: var(--bk-line);
+  flex-shrink: 0;
+}
+.bk-progress-fill {
+  height: 100%;
+  background: var(--bk-accent);
+  width: 0%;
+  transition: width .5s cubic-bezier(.16,1,.3,1);
+}
+
+/* ─── Corps scrollable ─── */
+.bk-body {
+  flex: 1;
+  position: relative;
+  min-height: 400px;
+  /* pas de overflow:hidden ici — .bk-panel{overflow:hidden} gère le clipping.
+     overflow:hidden ici + overflow-y:auto sur .bk-step cause un bug iOS Safari
+     où les touch events sont interceptés et les clicks ne se déclenchent pas. */
+}
+
+/* ─── Étapes ─── */
+.bk-step {
+  position: absolute;
+  inset: 0;
+  padding: 2.5rem 2.5rem 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity .35s ease, transform .35s cubic-bezier(.16,1,.3,1);
+}
+.bk-step.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+.bk-step.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+}
+
+/* ─── Labels et titres ─── */
+.bk-step-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--bk-accent);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.bk-step-lbl::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--bk-accent);
+}
+
+.bk-step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 300;
+  line-height: .95;
+  letter-spacing: -.02em;
+  margin-bottom: 2rem;
+  color: var(--bk-ink);
+}
+
+/* ─── ÉTAPE 1 : Cartes choix catégorie ─── */
+.bk-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: .5rem;
+}
+
+.bk-choice-card {
+  background: var(--bk-card);
+  border: 1px solid var(--bk-line);
+  color: var(--bk-ink);
+  cursor: pointer;
+  padding: 2rem 1.5rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  transition: border-color .3s, background .3s, transform .2s;
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-choice-card > * { position: relative; z-index: 1; }
+
+/* Hover fill animation — pointer devices only */
+@media (hover: hover) {
+  .bk-choice-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bk-ink);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform .45s cubic-bezier(.76,0,.24,1);
+    z-index: 0;
+  }
+  .bk-choice-card:hover::after { transform: scaleY(1); }
+  .bk-choice-card:hover { color: var(--bk-bg); }
+}
+
+.bk-choice-card.selected {
+  border-color: var(--bk-accent);
+  background: rgba(143,164,100,.12);
+}
+
+.bk-choice-icon {
+  color: var(--bk-accent);
+  line-height: 0;
+  transition: color .3s;
+}
+@media (hover: hover) {
+  .bk-choice-card:hover .bk-choice-icon { color: rgba(143,164,100,.8); }
+}
+
+.bk-choice-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: -.01em;
+}
+
+.bk-choice-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+  transition: color .3s;
+}
+@media (hover: hover) {
+  .bk-choice-card:hover .bk-choice-meta { color: rgba(239,251,219,.4); }
+}
+
+/* ─── ÉTAPES 2 & 3 : Listes ─── */
+.bk-list {
+  border-top: 1px solid var(--bk-line);
+}
+
+.bk-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--bk-line);
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+  color: var(--bk-ink);
+  font-family: 'Cormorant Garamond', serif;
+  transition: padding-left .3s, color .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-list-item:hover { padding-left: .75rem; color: var(--bk-accent); }
+.bk-list-item.selected {
+  color: var(--bk-accent);
+  padding-left: .75rem;
+}
+
+.bk-list-item-name {
+  font-size: clamp(1.1rem,2.5vw,1.5rem);
+  font-weight: 300;
+}
+.bk-list-item-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+}
+.bk-list-item-arrow {
+  color: var(--bk-muted);
+  flex-shrink: 0;
+  transition: transform .25s, color .25s;
+}
+.bk-list-item:hover .bk-list-item-arrow,
+.bk-list-item.selected .bk-list-item-arrow {
+  transform: translateX(4px);
+  color: var(--bk-accent);
+}
+
+/* ─── Options extras (meublé, pièces) ─── */
+.bk-extras-group {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--bk-line);
+  padding-top: 1.25rem;
+}
+.bk-extras-title {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--bk-accent);
+  margin-bottom: 1rem;
+}
+.bk-extra-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  cursor: pointer;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--bk-line);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--bk-ink);
+}
+.bk-extra-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--bk-line);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+}
+.bk-extra-row input[type="checkbox"]:checked {
+  border-color: var(--bk-accent);
+  background: var(--bk-accent);
+}
+.bk-extra-row input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: .6rem;
+  color: var(--bk-bg);
+}
+
+.bk-extra-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--bk-line);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--bk-ink);
+}
+.bk-counter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+.bk-counter-btn {
+  background: none;
+  border: 1px solid var(--bk-line);
+  color: var(--bk-ink);
+  width: 28px; height: 28px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .25s, color .25s;
+  line-height: 1;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-counter-btn:hover { border-color: var(--bk-accent); color: var(--bk-accent); }
+#bk-pieces-val {
+  font-family: 'Space Mono', monospace;
+  font-size: .85rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* ─── ÉTAPE 4 : Calendrier ─── */
+.bk-calendar {
+  user-select: none;
+}
+
+.bk-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.bk-cal-month {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: -.01em;
+}
+.bk-cal-nav {
+  background: none;
+  border: 1px solid var(--bk-line);
+  color: var(--bk-ink);
+  width: 32px; height: 32px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .25s, color .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-cal-nav:hover { border-color: var(--bk-accent); color: var(--bk-accent); }
+
+.bk-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.bk-cal-dow {
+  font-family: 'Space Mono', monospace;
+  font-size: .5rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+  text-align: center;
+  padding: .4rem 0;
+}
+.bk-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: .95rem;
+  font-weight: 300;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color .2s, color .2s, background .2s;
+  color: var(--bk-ink);
+  background: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-cal-day:hover:not(.disabled):not(.selected) {
+  border-color: var(--bk-line);
+  color: var(--bk-accent);
+}
+.bk-cal-day.today {
+  border-color: var(--bk-line);
+}
+.bk-cal-day.selected {
+  background: var(--bk-accent);
+  color: var(--bk-bg);
+  border-color: var(--bk-accent);
+}
+.bk-cal-day.disabled {
+  color: var(--bk-line);
+  cursor: default;
+  pointer-events: none;
+}
+.bk-cal-day.empty {
+  pointer-events: none;
+}
+
+/* ─── ÉTAPE 5 : Créneaux ─── */
+.bk-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+  margin-top: .5rem;
+}
+
+.bk-slot {
+  padding: .9rem .5rem;
+  border: 1px solid var(--bk-line);
+  background: none;
+  color: var(--bk-ink);
+  font-family: 'Space Mono', monospace;
+  font-size: .75rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .25s, color .25s, background .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-slot:hover:not(.unavailable) {
+  border-color: var(--bk-accent);
+  color: var(--bk-accent);
+}
+.bk-slot.selected {
+  background: var(--bk-accent);
+  color: var(--bk-bg);
+  border-color: var(--bk-accent);
+}
+.bk-slot.unavailable {
+  color: var(--bk-line);
+  cursor: default;
+  text-decoration: line-through;
+}
+
+.bk-slots-loading {
+  grid-column: 1 / -1;
+  font-family: 'Space Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+/* ─── ÉTAPE 6 : Formulaire ─── */
+.bk-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.bk-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.bk-field {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+.bk-label {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+}
+.bk-input {
+  background: var(--bk-input);
+  border: none;
+  border-bottom: 1px solid var(--bk-line);
+  color: var(--bk-ink);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 300;
+  padding: .6rem 0;
+  outline: none;
+  transition: border-color .25s;
+  width: 100%;
+}
+.bk-input:focus { border-color: var(--bk-accent); }
+.bk-input.error { border-color: #c0392b; }
+.bk-input::placeholder { color: var(--bk-muted); font-style: italic; }
+
+/* ─── ÉTAPE 7 : Récapitulatif ─── */
+.bk-summary {
+  border-top: 1px solid var(--bk-line);
+  margin-bottom: 1.5rem;
+}
+.bk-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: .85rem 0;
+  border-bottom: 1px solid var(--bk-line);
+  gap: 1rem;
+}
+.bk-summary-key {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+  flex-shrink: 0;
+}
+.bk-summary-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 300;
+  text-align: right;
+  color: var(--bk-ink);
+}
+
+.bk-note {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .08em;
+  color: var(--bk-muted);
+  line-height: 1.8;
+  margin-top: 1rem;
+}
+
+/* ─── Succès ─── */
+.bk-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  gap: 1.25rem;
+}
+.bk-success-check {
+  color: var(--bk-accent);
+  line-height: 0;
+}
+.bk-success-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  letter-spacing: -.02em;
+  color: var(--bk-ink);
+}
+.bk-success-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--bk-muted);
+  max-width: 340px;
+}
+
+/* ─── Footer navigation ─── */
+.bk-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2.5rem;
+  border-top: 1px solid var(--bk-line);
+  flex-shrink: 0;
+}
+
+.bk-btn-back {
+  background: none;
+  border: none;
+  color: var(--bk-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem 0;
+  transition: color .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-btn-back:hover { color: var(--bk-ink); }
+.bk-btn-back:disabled { opacity: 0; pointer-events: none; }
+
+.bk-btn-next {
+  background: var(--bk-ink);
+  color: var(--bk-bg);
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: .75rem 1.75rem;
+  transition: background .25s, color .25s, opacity .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-btn-next:hover { background: var(--bk-accent); }
+.bk-btn-next:disabled { opacity: .35; pointer-events: none; }
+
+/* ─── Bouton trigger dans la page contact ─── */
+.bk-trigger {
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  border-radius: 0;
+  width: 100%;
+  text-align: left;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 600px) {
+  /* Panel plein écran sur mobile */
+  .bk-overlay { padding: 0; align-items: flex-end; }
+  .bk-panel {
+    height: 92dvh;
+    height: 92vh; /* fallback */
+    max-height: none;
+    min-height: 0;
+    border-radius: 2px 2px 0 0;
+    width: 100%;
+  }
+  .bk-step { padding: 1.75rem 1.25rem 1rem; }
+  .bk-footer { padding: 1rem 1.25rem; }
+  .bk-cards-grid { grid-template-columns: 1fr; gap: .75rem; }
+  .bk-choice-card { padding: 1.25rem 1rem; }
+  .bk-form-row { grid-template-columns: 1fr; }
+  .bk-slots-grid { grid-template-columns: repeat(3, 1fr); }
+  .bk-step-title { font-size: clamp(1.5rem, 6vw, 2rem); margin-bottom: 1.25rem; }
+  .bk-cal-day { font-size: .8rem; }
+}
+
+/* ─── Récapitulatif : header inline ─── */
+.bk-step-header-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.bk-step-header-inline .bk-step-title {
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
+  margin-bottom: 0;
+  line-height: 1;
+}
+.bk-step-header-inline .bk-step-lbl {
+  flex-shrink: 0;
+}
+.bk-summary-row { padding: .55rem 0; }
+.bk-summary { margin-bottom: .8rem; }

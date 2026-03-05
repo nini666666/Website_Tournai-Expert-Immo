@@ -1,0 +1,13 @@
+# Secrets — NE JAMAIS VERSIONNER
+backend/.env
+backend/tokens.json
+
+# Dépendances
+backend/node_modules/
+
+# Base de données locale
+backend/data/*.db
+
+# OS
+.DS_Store
+Thumbs.db
