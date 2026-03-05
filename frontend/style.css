@@ -571,6 +571,7 @@ body:not(.dark) nav.on-contact .nav-links a { color: rgba(16,33,43,.7) !importan
 .contact-list { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
 .contact-row {
   display: flex; align-items: center; gap: 1.8rem;
+  justify-content: flex-end;
   width: 100%;
   position: relative;
   font-family: 'Cormorant Garamond', serif;
@@ -602,7 +603,7 @@ button.contact-row:hover { color: var(--accent); }
   color: var(--accent); flex-shrink: 0;
 }
 .contact-sep { color: var(--line); font-weight: 200; font-size: 1.6rem; flex-shrink: 0; }
-.contact-val { letter-spacing: .02em; flex: 1; }
+.contact-val { letter-spacing: .02em; text-align: right; }
 
 /* ═══════════════════════════════
    FOOTER
