@@ -565,10 +565,13 @@ body:not(.dark) nav.on-contact .nav-links a { color: rgba(16,33,43,.7) !importan
    PAGE CONTACT
 ═══════════════════════════════ */
 .contact-layout {
-  display: flex; gap: 4rem; align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 4rem;
+  align-items: start;
 }
-.contact-intro { flex: 1; max-width: 360px; font-size: 1rem; line-height: 1.8; color: var(--muted); font-weight: 300; pointer-events: none; }
-.contact-list { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
+.contact-intro { font-size: 1rem; line-height: 1.8; color: var(--muted); font-weight: 300; pointer-events: none; }
+.contact-list { grid-column: 3; display: flex; flex-direction: column; gap: 0; }
 .contact-row {
   display: flex; align-items: center; gap: 1.8rem;
   width: 100%;
@@ -651,8 +654,9 @@ body::before {
 
   .about-grid { grid-template-columns: 1fr; gap: 3rem; }
 
-  .contact-layout { flex-direction: column; gap: 2rem; }
-  .contact-intro { flex: none; max-width: 100%; font-size: .95rem; }
+  .contact-layout { grid-template-columns: 1fr; gap: 2rem; }
+  .contact-list { grid-column: 1; }
+  .contact-intro { font-size: .95rem; }
   .contact-row { font-size: 1rem; gap: 1rem; padding: 1.2rem 0; }
   .contact-val { word-break: break-all; }
 
