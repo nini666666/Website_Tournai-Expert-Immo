@@ -566,7 +566,7 @@ body:not(.dark) nav.on-contact .nav-links a { color: rgba(16,33,43,.7) !importan
 ═══════════════════════════════ */
 .contact-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr;
+  grid-template-columns: 1fr 1fr max-content;
   gap: 4rem;
   align-items: start;
 }
@@ -574,7 +574,6 @@ body:not(.dark) nav.on-contact .nav-links a { color: rgba(16,33,43,.7) !importan
 .contact-list { grid-column: 3; display: flex; flex-direction: column; gap: 0; }
 .contact-row {
   display: flex; align-items: center; gap: 1.8rem;
-  width: 100%;
   position: relative;
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.3rem; font-weight: 300;
