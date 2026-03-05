@@ -86,3 +86,44 @@
   document.getElementById('themeToggle').addEventListener('click', () => {
     document.body.classList.toggle('dark');
   });
+
+  // Fix navigation contact-rows (Safari/WebKit flex link bug)
+  // 1) Listeners directs sur chaque <a>.contact-row : gère les clics sur le texte ET l'espace vide
+  document.querySelectorAll('a.contact-row').forEach(function(row) {
+    row.addEventListener('click', function(e) {
+      if (!row.href) return;
+      e.preventDefault();
+      e.stopPropagation(); // évite le double déclenchement avec le fallback ci-dessous
+      if (row.target === '_blank') {
+        window.open(row.href, '_blank');
+      } else {
+        window.location.href = row.href;
+      }
+    });
+  });
+
+  // 2) Fallback : clics dans l'espace vide qui n'atteignent pas le <a> (cas extrême Safari)
+  const contactList = document.querySelector('.contact-list');
+  if (contactList) {
+    contactList.addEventListener('click', function(e) {
+      if (e.target.closest('.contact-row')) return; // déjà géré
+      const rows = this.querySelectorAll('.contact-row');
+      for (const r of rows) {
+        const rect = r.getBoundingClientRect();
+        if (e.clientY >= rect.top && e.clientY <= rect.bottom &&
+            e.clientX >= rect.left && e.clientX <= rect.right) {
+          if (r.tagName === 'A' && r.href) {
+            if (r.target === '_blank') {
+              window.open(r.href, '_blank');
+            } else {
+              window.location.href = r.href;
+            }
+          } else {
+            r.click();
+          }
+          e.preventDefault();
+          break;
+        }
+      }
+    });
+  }
