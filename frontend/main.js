@@ -2,7 +2,7 @@
   const burger = document.getElementById('burger');
   const drawer = document.getElementById('mobileDrawer');
 
-  function switchPage(targetId) {
+  function switchPage(targetId, pushState = true) {
     const current = document.querySelector('.page.active');
     const target  = document.getElementById('page-' + targetId);
     if (!target || target === current) return;
@@ -37,6 +37,11 @@
 
     // Scroll listener pour masquer/afficher le nav
     setupScrollHide(target, targetId);
+
+    // Historique navigateur (bouton retour Android)
+    if (pushState) {
+      history.pushState({ page: targetId }, '', '#' + targetId);
+    }
   }
 
   function setupScrollHide(pageEl, pageId) {
@@ -55,8 +60,18 @@
     pageEl.onscroll = onScroll;
   }
 
-  // Burger toggle
+  // Burger toggle (touchend + click avec flag anti-doublon pour iOS/Android)
+  let burgerTouchHandled = false;
+
+  burger.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    burgerTouchHandled = true;
+    burger.classList.toggle('open');
+    drawer.classList.toggle('open');
+  }, { passive: false });
+
   burger.addEventListener('click', () => {
+    if (burgerTouchHandled) { burgerTouchHandled = false; return; }
     burger.classList.toggle('open');
     drawer.classList.toggle('open');
   });
@@ -65,9 +80,19 @@
   document.querySelectorAll('[data-page]').forEach(a => {
     a.addEventListener('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       switchPage(this.dataset.page);
     });
   });
+
+  // Bouton retour Android
+  window.addEventListener('popstate', (e) => {
+    const pageId = e.state?.page || 'home';
+    switchPage(pageId, false);
+  });
+
+  // État initial de la page home dans l'historique
+  history.replaceState({ page: 'home' }, '', '#home');
 
   // Email anti-spam
   const mailLink = document.getElementById('mail-link');

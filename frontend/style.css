@@ -78,6 +78,7 @@ nav {
   pointer-events: none;
   transition: transform .4s ease, opacity .4s ease, background .3s ease;
 }
+nav > * { pointer-events: all; }
 nav.dark {
   background: linear-gradient(to bottom, rgba(201,216,220,0.92) 0%, rgba(201,216,220,0) 100%);
 }
@@ -132,11 +133,14 @@ nav.dark .nav-links a:hover, nav.dark .nav-links a.active { color: var(--ink); }
   display: none;
   flex-direction: column; justify-content: center; align-items: center;
   gap: 5px;
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
+  min-width: 44px; min-height: 44px;
   cursor: pointer; pointer-events: all;
   background: none; border: none; padding: 4px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 210;
 }
 .burger span {
   display: block; width: 22px; height: 1.5px;
@@ -151,7 +155,7 @@ nav.dark .burger span { background: var(--ink); }
 /* ─── MOBILE DRAWER ─── */
 .mobile-drawer {
   position: fixed; inset: 0;
-  z-index: 198;
+  z-index: 999;
   background: var(--bg);
   flex-direction: column;
   justify-content: center;
