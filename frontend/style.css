@@ -197,8 +197,12 @@ body.dark .mobile-drawer { background: #10212B; }
 }
 
 /* ─── PAGES ─── */
-.page {
+#pages-container {
   position: fixed; inset: 0;
+  overflow: hidden;
+}
+.page {
+  position: absolute; inset: 0;
   opacity: 0;
   transform: translateY(30px);
   pointer-events: none;
