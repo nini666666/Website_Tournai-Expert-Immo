@@ -12,7 +12,8 @@
     setTimeout(() => current.classList.remove('exit'), 600);
 
     target.classList.add('active');
-    target.scrollTop = 0;
+    const scrollEl = target.querySelector('.page-scroll') || target;
+    scrollEl.scrollTop = 0;
 
     // Nav style selon la page
     nav.classList.remove('hidden');
@@ -46,9 +47,10 @@
 
   function setupScrollHide(pageEl, pageId) {
     if (pageId === 'home') return;
+    const scrollEl = pageEl.querySelector('.page-scroll') || pageEl;
     let lastScroll = 0;
     const onScroll = () => {
-      const s = pageEl.scrollTop;
+      const s = scrollEl.scrollTop;
       if (s > lastScroll && s > 80) {
         nav.classList.add('hidden');
       } else {
@@ -56,8 +58,7 @@
       }
       lastScroll = s;
     };
-    // Nettoyer les anciens listeners
-    pageEl.onscroll = onScroll;
+    scrollEl.onscroll = onScroll;
   }
 
   // Burger toggle (touchend + click avec flag anti-doublon pour iOS/Android)
@@ -108,8 +109,8 @@
     document.body.classList.toggle('dark');
   });
 
-  // Fix scroll 1 doigt Android : signaler les pages comme cibles de scroll
-  document.querySelectorAll('.page').forEach(p => {
+  // Fix scroll 1 doigt Android : signaler les wrappers de scroll comme cibles
+  document.querySelectorAll('.page-scroll').forEach(p => {
     p.addEventListener('touchstart', () => {}, { passive: true });
   });
 

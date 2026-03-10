@@ -211,15 +211,23 @@ body.dark .mobile-drawer { background: #10212B; }
   opacity: 1;
   transform: translateY(0);
   pointer-events: all;
-  overflow-y: scroll;                   /* seulement la page active scrolle */
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior-y: contain;
+  touch-action: pan-y; /* autorise pan-y pour le wrapper de scroll enfant */
 }
 .page.exit {
   opacity: 0;
   transform: translateY(-20px);
   pointer-events: none;
+}
+
+/* ─── WRAPPER DE SCROLL (toutes les pages sauf home) ─── */
+/* Séparé du .page pour que Android reconnaisse correctement le scroll composité */
+.page-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 /* ═══════════════════════════════
