@@ -422,23 +422,27 @@ body.dark .tarifs-note { background: rgba(143,164,100,0.06); }
   overflow: hidden;
   transition: background .4s;
 }
-.tarif-card::after {
-  content: ''; position: absolute; inset: 0;
-  background: var(--ink);
-  transform: scaleY(0); transform-origin: bottom;
-  transition: transform .6s cubic-bezier(.76,0,.24,1);
-  z-index: 0;
+/* Hover animation uniquement sur desktop (souris) —
+   le transform:scaleY crée une couche composite qui bloque le scroll Android */
+@media (hover: hover) {
+  .tarif-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: var(--ink);
+    transform: scaleY(0); transform-origin: bottom;
+    transition: transform .6s cubic-bezier(.76,0,.24,1);
+    z-index: 0;
+  }
+  .tarif-card:hover::after { transform: scaleY(1); }
+  .tarif-card > * { position: relative; z-index: 1; }
+  .tarif-card:hover { color: var(--bg); }
 }
-.tarif-card:hover::after { transform: scaleY(1); }
-.tarif-card > * { position: relative; z-index: 1; }
-.tarif-card:hover { color: var(--bg); }
 .tarif-type {
   font-family: 'Space Mono', monospace; font-size: .55rem;
   letter-spacing: .15em; text-transform: uppercase;
   color: var(--accent); margin-bottom: 1.5rem;
   transition: color .4s;
 }
-.tarif-card:hover .tarif-type { color: rgba(245,237,216,.5); }
+@media (hover: hover) { .tarif-card:hover .tarif-type { color: rgba(245,237,216,.5); } }
 .tarif-name {
   font-size: clamp(1.4rem,2vw,2rem); font-weight: 300;
   line-height: 1.2; margin-bottom: 1.5rem;
@@ -461,20 +465,22 @@ body.dark .tarifs-note { background: rgba(143,164,100,0.06); }
   font-weight: 400; vertical-align: super;
   transition: color .4s;
 }
-.tarif-card:hover .tarif-price span { color: rgba(245,237,216,.5); }
+@media (hover: hover) { .tarif-card:hover .tarif-price span { color: rgba(245,237,216,.5); } }
 .tarif-detail {
   font-size: .85rem; color: var(--muted); line-height: 1.9;
   margin-top: 1.5rem; font-weight: 300;
   transition: color .4s;
 }
 .tarif-detail em { font-style: normal; color: var(--ink); transition: color .4s; }
-.tarif-card:hover .tarif-detail { color: rgba(245,237,216,.5); }
-.tarif-card:hover .tarif-detail em { color: rgba(245,237,216,.85); }
+@media (hover: hover) {
+  .tarif-card:hover .tarif-detail { color: rgba(245,237,216,.5); }
+  .tarif-card:hover .tarif-detail em { color: rgba(245,237,216,.85); }
+}
 .tarif-divider {
   width: 30px; height: 1px; background: var(--line);
   margin: 1.5rem 0; transition: background .4s;
 }
-.tarif-card:hover .tarif-divider { background: rgba(245,237,216,.2); }
+@media (hover: hover) { .tarif-card:hover .tarif-divider { background: rgba(245,237,216,.2); } }
 .tarifs-footer-note {
   font-family: 'Space Mono', monospace; font-size: .6rem;
   letter-spacing: .1em; color: var(--muted);
