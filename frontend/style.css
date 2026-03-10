@@ -72,7 +72,7 @@ body.dark .icon-moon { opacity: 1; }
 /* ─── NAV ─── */
 nav {
   position: fixed; top: 0; left: 0; right: 0;
-  z-index: 200;
+  z-index: 1000;
   display: flex; justify-content: space-between; align-items: center;
   padding: 2rem 3rem;
   pointer-events: none;
@@ -140,7 +140,6 @@ nav.dark .nav-links a:hover, nav.dark .nav-links a.active { color: var(--ink); }
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   position: relative;
-  z-index: 210;
 }
 .burger span {
   display: block; width: 22px; height: 1.5px;
