@@ -108,6 +108,11 @@
     document.body.classList.toggle('dark');
   });
 
+  // Fix scroll 1 doigt Android : signaler les pages comme cibles de scroll
+  document.querySelectorAll('.page').forEach(p => {
+    p.addEventListener('touchstart', () => {}, { passive: true });
+  });
+
   // Fix Safari/WebKit : force la navigation sur les <a>.contact-row
   document.querySelectorAll('a.contact-row').forEach(function(row) {
     row.addEventListener('click', function(e) {
