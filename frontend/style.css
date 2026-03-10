@@ -204,16 +204,17 @@ body.dark .mobile-drawer { background: #10212B; }
   transform: translateY(30px);
   pointer-events: none;
   transition: opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
-  overflow-y: scroll;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior-y: contain;
-  will-change: scroll-position;
+  overflow: hidden;       /* pages inactives : pas de scroll */
+  touch-action: none;     /* pages inactives : pas de geste tactile */
 }
 .page.active {
   opacity: 1;
   transform: translateY(0);
   pointer-events: all;
+  overflow-y: scroll;                   /* seulement la page active scrolle */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 .page.exit {
   opacity: 0;
