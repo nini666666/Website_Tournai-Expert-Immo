@@ -9,8 +9,13 @@
 
     current.classList.remove('active');
     current.classList.add('exit');
-    setTimeout(() => current.classList.remove('exit'), 600);
+    setTimeout(() => current.classList.remove('exit'), 400);
 
+    // Pattern entering : force un reflow entre display:none→block et l'ajout de .active.
+    // Sans ce reflow, le navigateur fusionne les changements et n'anime pas l'opacité.
+    target.classList.add('entering');
+    void target.offsetHeight; // reflow délibéré
+    target.classList.remove('entering');
     target.classList.add('active');
     const scrollEl = target.querySelector('.page-scroll') || target;
     scrollEl.scrollTop = 0;

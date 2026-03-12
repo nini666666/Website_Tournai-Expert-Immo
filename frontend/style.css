@@ -163,10 +163,24 @@ nav.dark .burger span { background: var(--ink); }
   opacity: 0;
   pointer-events: none;
   display: flex;
-  transition: opacity .4s ease, background .6s ease;
+  /* visibility:hidden est CRITIQUE pour le scroll mobile :
+     pointer-events:none sur le parent ne se propage pas aux enfants en CSS HTML.
+     Les <a> du drawer (centrés verticalement = milieu écran) restent cliquables
+     même fermés, bloquant le routing du pan vers .page-scroll.
+     visibility:hidden se propage aux enfants et retire tout le sous-arbre
+     du hit-testing du compositor Android/Chrome. */
+  visibility: hidden;
+  /* Fermeture : visibility passe à hidden APRÈS la fin du fade-out (délai = durée opacity) */
+  transition: opacity .4s ease, visibility 0s linear .4s, background .6s ease;
 }
 body.dark .mobile-drawer { background: #10212B; }
-.mobile-drawer.open { opacity: 1; pointer-events: all; }
+.mobile-drawer.open {
+  opacity: 1;
+  pointer-events: all;
+  visibility: visible;
+  /* Ouverture : visibility passe à visible IMMÉDIATEMENT (délai = 0s) puis opacité fade-in */
+  transition: opacity .4s ease, visibility 0s linear 0s, background .6s ease;
+}
 .mobile-drawer ul {
   list-style: none;
   display: flex; flex-direction: column; gap: 0;
@@ -202,20 +216,28 @@ body.dark .mobile-drawer { background: #10212B; }
 }
 .page {
   position: absolute; inset: 0;
+  /* display:none : retrait complet du layout, du compositing et du touch-routing.
+     pointer-events:none ne suffit pas — Chrome lit touch-action des couches composites
+     même si pointer-events est none. display:none garantit une isolation totale. */
+  display: none;
   opacity: 0;
-  /* Pas de transform : évite la promotion en compositing layer
-     qui bloque le routing touch sur Android vers .page-scroll */
   pointer-events: none;
   transition: opacity .4s ease;
   overflow: clip;
-  touch-action: none;
+}
+/* Classe transitoire : page affichée mais encore transparente (avant reflow) */
+.page.entering {
+  display: block;
+  opacity: 0;
 }
 .page.active {
+  display: block;
   opacity: 1;
   pointer-events: all;
   touch-action: pan-y;
 }
 .page.exit {
+  display: block;
   opacity: 0;
   pointer-events: none;
 }
@@ -419,7 +441,10 @@ body.dark .tarifs-note { background: rgba(143,164,100,0.06); }
   border-bottom: 1px solid var(--line);
   padding: 2.5rem;
   position: relative;
-  overflow: hidden;
+  /* overflow:clip au lieu de overflow:hidden : clip visuel SANS créer de scroll container.
+     overflow:hidden crée un scroll container implicite → Chrome y route le scroll wheel/pan
+     même si le contenu ne déborde pas, bloquant le scroll de .page-scroll sur desktop et mobile. */
+  overflow: clip;
   transition: background .4s;
 }
 /* Hover animation uniquement sur desktop (souris) —
