@@ -125,10 +125,13 @@
     // href mailto: conservé pour l'accessibilité (clic droit → Copier l'adresse mail)
     mailLink.href = 'mailto:' + email;
     mailVal.textContent = email;
-    // Clic : ouvre Gmail Compose dans un nouvel onglet.
-    // mailto: natif ne fonctionne pas sur desktop sans client mail configuré
-    // (Outlook, Thunderbird...) — l'URL Gmail Compose est universelle.
+    // Clic :
+    // - Mobile (Android/iOS) : comportement natif mailto: → ouvre l'app mail par défaut
+    // - Desktop : ouvre Gmail Compose dans un nouvel onglet (mailto: sans client
+    //   mail configuré ne fait rien sur Windows/Mac)
     mailLink.addEventListener('click', function(e) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) return; // natif : ouvre l'app mail par défaut
       e.preventDefault();
       window.open(
         'https://mail.google.com/mail/?view=cm&to=' + email,
