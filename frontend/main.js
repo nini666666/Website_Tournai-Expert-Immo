@@ -2,6 +2,20 @@
   const burger = document.getElementById('burger');
   const drawer = document.getElementById('mobileDrawer');
 
+  // ── Thème automatique ──────────────────────────────────────────────────────
+  // null  = auto (dark sur pages intérieures, light sur home)
+  // 'dark' / 'light' = choix explicite de l'utilisateur via le toggle
+  let userTheme = null;
+
+  function applyAutoTheme(pageId) {
+    if (userTheme !== null) return; // l'utilisateur a choisi manuellement : ne pas écraser
+    if (pageId === 'home') {
+      document.body.classList.remove('dark');
+    } else {
+      document.body.classList.add('dark');
+    }
+  }
+
   function switchPage(targetId, pushState = true) {
     const current = document.querySelector('.page.active');
     const target  = document.getElementById('page-' + targetId);
@@ -40,6 +54,9 @@
     // Fermer le drawer mobile
     drawer.classList.remove('open');
     burger.classList.remove('open');
+
+    // Thème automatique : dark sur pages intérieures, light sur home
+    applyAutoTheme(targetId);
 
     // Scroll listener pour masquer/afficher le nav
     setupScrollHide(target, targetId);
@@ -109,15 +126,21 @@
     mailVal.textContent = email;
   }
 
-  // Theme toggle
+  // Theme toggle — mémorise le choix explicite de l'utilisateur
   document.getElementById('themeToggle').addEventListener('click', () => {
     document.body.classList.toggle('dark');
+    userTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
   });
 
   // Fix Safari/WebKit : force la navigation sur les <a>.contact-row
+  // Exception mailto: — laisser le navigateur ouvrir le client mail nativement.
+  // Sur desktop, window.location.href = 'mailto:...' ne déclenche pas
+  // systématiquement le client mail ; le comportement natif <a href="mailto:"> est fiable.
   document.querySelectorAll('a.contact-row').forEach(function(row) {
     row.addEventListener('click', function(e) {
       if (!row.href) return;
+      // Liens mailto : comportement natif du navigateur (client mail desktop + iOS)
+      if (row.href.startsWith('mailto:')) return;
       e.preventDefault();
       if (row.target === '_blank') {
         window.open(row.href, '_blank');
