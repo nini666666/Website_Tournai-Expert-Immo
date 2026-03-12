@@ -117,13 +117,25 @@
   // État initial de la page home dans l'historique
   history.replaceState({ page: 'home' }, '', '#home');
 
-  // Email anti-spam
+  // Email anti-spam + Gmail Compose
   const mailLink = document.getElementById('mail-link');
   const mailVal  = document.getElementById('mail-val');
   if (mailLink && mailVal) {
     const email = 'expertimmotournai' + '@' + 'gmail.com';
+    // href mailto: conservé pour l'accessibilité (clic droit → Copier l'adresse mail)
     mailLink.href = 'mailto:' + email;
     mailVal.textContent = email;
+    // Clic : ouvre Gmail Compose dans un nouvel onglet.
+    // mailto: natif ne fonctionne pas sur desktop sans client mail configuré
+    // (Outlook, Thunderbird...) — l'URL Gmail Compose est universelle.
+    mailLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.open(
+        'https://mail.google.com/mail/?view=cm&to=' + email,
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
   }
 
   // Theme toggle — mémorise le choix explicite de l'utilisateur
