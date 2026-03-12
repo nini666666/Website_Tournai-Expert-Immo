@@ -626,6 +626,10 @@ body:not(.dark) nav.on-contact .nav-links a { color: rgba(16,33,43,.7) !importan
   position: absolute;
   inset: 0;
 }
+/* Desktop : lien téléphone non clicable (pas de composeur sur PC) */
+@media (hover: hover) {
+  a.contact-row[href^="tel:"] { pointer-events: none; cursor: default; }
+}
 button.contact-row {
   background: none;
   border: none;
