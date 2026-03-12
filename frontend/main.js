@@ -1,6 +1,22 @@
   const nav = document.getElementById('main-nav');
   const burger = document.getElementById('burger');
   const drawer = document.getElementById('mobileDrawer');
+  const navPageName = document.getElementById('nav-page-name');
+
+  // ── Noms de pages affichés sous le logo (mobile) ──────────────────────────
+  const PAGE_NAMES = {
+    home:       '',
+    apropos:    'À propos',
+    expertises: 'Expertises',
+    etats:      'États des lieux',
+    tarifs:     'Tarifs',
+    contact:    'Contact',
+  };
+
+  function setNavPageName(pageId) {
+    if (!navPageName) return;
+    navPageName.textContent = PAGE_NAMES[pageId] || '';
+  }
 
   // ── Thème automatique ──────────────────────────────────────────────────────
   // null  = auto (dark sur pages intérieures, light sur home)
@@ -54,6 +70,9 @@
     // Fermer le drawer mobile
     drawer.classList.remove('open');
     burger.classList.remove('open');
+
+    // Nom de la page dans la nav bar (mobile)
+    setNavPageName(targetId);
 
     // Thème automatique : dark sur pages intérieures, light sur home
     applyAutoTheme(targetId);
