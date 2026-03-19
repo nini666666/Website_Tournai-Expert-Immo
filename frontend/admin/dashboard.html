@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Tournai Expert Immo</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-label">Tournai Expert Immo</div>
+      <div class="sidebar-brand-title">Administration</div>
+    </div>
+    <div class="sidebar-user" id="sidebar-user">admin</div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item" data-view="dashboard">
+        <span>Tableau de bord</span>
+        <span class="nav-badge" id="badge-pending" hidden>0</span>
+      </button>
+      <button class="nav-item" data-view="calendar">Calendrier</button>
+      <button class="nav-item" data-view="appointments">Rendez-vous</button>
+      <button class="nav-item" data-view="clients">Clients</button>
+      <button class="nav-item" data-view="blocked">Blocages</button>
+      <button class="nav-item" data-view="prices">Tarifs</button>
+    </nav>
+
+    <div class="sidebar-logout">
+      <button id="logout-btn">← Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Tableau de bord</div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── Dashboard ── -->
+      <div class="view" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">RDV ce mois</div>
+            <div class="stat-card-value" id="stat-total">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Confirmés</div>
+            <div class="stat-card-value" id="stat-confirmed">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">En attente</div>
+            <div class="stat-card-value" id="stat-pending">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">CA confirmé</div>
+            <div class="stat-card-value" id="stat-revenue">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">CA en attente</div>
+            <div class="stat-card-value" id="stat-pending-rev">—</div>
+          </div>
+        </div>
+
+        <div class="section-title">À traiter</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date / Heure</th>
+                <th>Client</th>
+                <th>Prestation</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="recent-pending-body">
+              <tr class="empty-row"><td colspan="5">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Calendar ── -->
+      <div class="view" id="view-calendar">
+        <div class="cal-nav">
+          <button class="btn btn-ghost btn-sm" id="cal-prev">←</button>
+          <h2 id="cal-month-label"></h2>
+          <button class="btn btn-ghost btn-sm" id="cal-next">→</button>
+        </div>
+
+        <div class="cal-grid">
+          <div class="cal-dow">Lun</div>
+          <div class="cal-dow">Mar</div>
+          <div class="cal-dow">Mer</div>
+          <div class="cal-dow">Jeu</div>
+          <div class="cal-dow">Ven</div>
+          <div class="cal-dow">Sam</div>
+          <div class="cal-dow">Dim</div>
+          <div id="cal-grid-days" style="display:contents"></div>
+        </div>
+
+        <div class="day-detail" id="cal-day-detail" hidden>
+          <div class="day-detail-title" id="cal-day-title"></div>
+          <div id="cal-day-body"></div>
+        </div>
+      </div>
+
+      <!-- ── Appointments ── -->
+      <div class="view" id="view-appointments">
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <input type="text" id="filter-search" placeholder="Rechercher (nom, email…)" style="width:200px">
+            <select id="filter-status">
+              <option value="">Tous les statuts</option>
+              <option value="pending_payment">Paiement attendu</option>
+              <option value="awaiting_confirmation">À confirmer</option>
+              <option value="confirmed">Confirmés</option>
+              <option value="rejected">Refusés</option>
+              <option value="cancelled">Annulés</option>
+              <option value="expired">Expirés</option>
+            </select>
+            <input type="date" id="filter-from" title="Du">
+            <input type="date" id="filter-to" title="Au">
+            <div class="spacer"></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Heure</th>
+                <th>Client</th>
+                <th>Prestation</th>
+                <th>Statut</th>
+                <th>Montant</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="appt-tbody">
+              <tr class="empty-row"><td colspan="7">Chargement…</td></tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <button class="btn btn-ghost btn-sm" id="appt-prev" disabled>← Précédent</button>
+            <button class="btn btn-ghost btn-sm" id="appt-next">Suivant →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Clients ── -->
+      <div class="view" id="view-clients">
+        <div class="mb" style="display:flex;gap:.75rem;align-items:center">
+          <input type="text" id="client-search" placeholder="Rechercher (nom, email…)"
+            style="background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.78rem;padding:.5rem .85rem;border-radius:var(--rad);outline:none;width:260px">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem;align-items:start">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
+                  <th style="text-align:center">RDV</th>
+                  <th>Dernier RDV</th>
+                </tr>
+              </thead>
+              <tbody id="clients-tbody">
+                <tr class="empty-row"><td colspan="5">Chargement…</td></tr>
+              </tbody>
+            </table>
+            <div class="pagination">
+              <button class="btn btn-ghost btn-sm" id="client-prev" disabled>← Précédent</button>
+              <button class="btn btn-ghost btn-sm" id="client-next">Suivant →</button>
+            </div>
+          </div>
+
+          <div class="client-detail" id="client-detail" hidden>
+            <div class="client-detail-name" id="client-name"></div>
+            <div class="client-detail-meta" id="client-meta"></div>
+
+            <div class="section-title">Notes</div>
+            <textarea class="notes-area" id="client-notes" placeholder="Notes internes…" rows="4"></textarea>
+            <button class="btn btn-accent btn-sm" id="notes-save-btn">Enregistrer</button>
+
+            <div class="section-title mt">Historique</div>
+            <div id="client-history"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Blocked slots ── -->
+      <div class="view" id="view-blocked">
+        <form class="block-form" id="block-form-el">
+          <div class="block-form-title">Bloquer une date ou un créneau</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Date</label>
+              <input type="date" id="block-date" required>
+            </div>
+            <div class="form-field">
+              <label>Créneau (vide = journée entière)</label>
+              <select id="block-slot">
+                <option value="">Journée entière</option>
+                <option>10:00</option><option>10:30</option>
+                <option>11:00</option><option>11:30</option>
+                <option>12:00</option><option>12:30</option>
+                <option>13:00</option><option>13:30</option>
+              </select>
+            </div>
+            <div class="form-field" style="flex:1">
+              <label>Raison (optionnel)</label>
+              <input type="text" id="block-reason" placeholder="Vacances, déplacement…">
+            </div>
+            <button type="submit" class="btn btn-accent" style="align-self:flex-end">Bloquer</button>
+          </div>
+        </form>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Créneau</th>
+                <th>Raison</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="blocked-tbody">
+              <tr class="empty-row"><td colspan="4">Aucun blocage</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Prices ── -->
+      <div class="view" id="view-prices">
+        <div class="mb flex-row">
+          <div style="flex:1;font-family:var(--font-mono);font-size:.62rem;color:var(--text2)">
+            Les cases <span style="color:var(--warn)">oranges</span> s'appliquent à toutes les propriétés de la prestation.
+          </div>
+          <button class="btn btn-accent" id="prices-save-btn">Enregistrer les tarifs</button>
+        </div>
+        <div class="table-wrap" style="overflow-x:auto">
+          <table class="price-table">
+            <thead>
+              <tr>
+                <th>Prestation</th>
+                <th>Studio</th><th>Appt 1ch</th><th>Appt 2ch</th><th>Appt 3ch</th>
+                <th>Maison ≤3ch</th><th>Maison 4ch</th><th>Devis</th>
+                <th style="color:var(--warn)">+ Meublé</th>
+                <th style="color:var(--warn)">+ Pièce</th>
+              </tr>
+            </thead>
+            <tbody id="prices-tbody">
+              <tr class="empty-row"><td colspan="10">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- .content -->
+  </div><!-- .main -->
+</div><!-- .app -->
+
+<!-- ── Appointment modal ── -->
+<div class="modal-overlay" id="modal-appt" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Rendez-vous</div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-content"></div>
+      <div style="font-family:var(--font-mono);font-size:.55rem;color:var(--text3);margin-top:1rem" id="modal-token"></div>
+    </div>
+    <div class="modal-footer" id="modal-footer-actions"></div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

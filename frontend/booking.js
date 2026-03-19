@@ -528,7 +528,23 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Erreur serveur');
+      const data = await res.json();
+      if (!res.ok) {
+        // Règle 5 jours : invitation à appeler
+        if (data.call_required) {
+          alert(data.error);
+          btnNext.disabled = false;
+          btnNext.textContent = 'Envoyer la demande';
+          return;
+        }
+        throw new Error(data.error || 'Erreur serveur');
+      }
+      // Paiement requis → rediriger vers Mollie
+      if (data.payment_url) {
+        window.location.href = data.payment_url;
+        return;
+      }
+      // Devis ou gratuit → afficher l'étape succès
       showStep('success');
     } catch (err) {
       btnNext.disabled = false;

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Tournai Expert Immo</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-label">Tournai Expert Immo</div>
+      <div class="login-title">Administration</div>
+    </div>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Identifiant</label>
+        <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <div id="login-error" class="error-msg" hidden></div>
+      <button type="submit" id="login-btn">Se connecter</button>
+    </form>
+  </div>
+
+  <script>
+    // Rediriger si déjà connecté
+    if (sessionStorage.getItem('tei_token')) {
+      window.location.replace('dashboard.html');
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('login-error');
+      btn.disabled = true;
+      btn.textContent = 'Connexion…';
+      err.hidden = true;
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        sessionStorage.setItem('tei_token', data.token);
+        sessionStorage.setItem('tei_user', data.username);
+        window.location.replace('dashboard.html');
+      } catch (e) {
+        err.textContent = e.message;
+        err.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Se connecter';
+      }
+    });
+  </script>
+</body>
+</html>
