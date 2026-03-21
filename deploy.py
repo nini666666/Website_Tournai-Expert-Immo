@@ -72,8 +72,9 @@ def deploy_backend(ssh):
 def deploy_frontend(ssh):
     print('\n-- Frontend --')
     files = [
-        ('frontend/booking.js', f'{REMOTE}/frontend/booking.js'),
-        ('frontend/index.html', f'{REMOTE}/frontend/index.html'),
+        ('frontend/booking.js',  f'{REMOTE}/frontend/booking.js'),
+        ('frontend/booking.css', f'{REMOTE}/frontend/booking.css'),
+        ('frontend/index.html',  f'{REMOTE}/frontend/index.html'),
     ]
     for local, remote in files:
         put(ssh, local, remote)
