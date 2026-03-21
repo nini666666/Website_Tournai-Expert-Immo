@@ -99,10 +99,13 @@ const getConfirmedOnDate = db.prepare(`
   WHERE date = ? AND status = 'confirmed'
 `);
 
-// Inclut les pending pour bloquer le créneau dès la soumission
+// Inclut les pending < 12h pour bloquer le créneau dès la soumission
 const getPendingOrConfirmedOnDate = db.prepare(`
   SELECT slot, duration FROM appointments
-  WHERE date = ? AND status IN ('pending', 'confirmed')
+  WHERE date = ? AND (
+    status = 'confirmed'
+    OR (status = 'pending' AND created_at > datetime('now', '-12 hours'))
+  )
 `);
 
 const rescheduleAppointment = db.prepare(`
