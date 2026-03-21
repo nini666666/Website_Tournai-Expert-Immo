@@ -53,7 +53,7 @@ app.get('/api/slots', async (req, res) => {
     console.error('[/api/slots]', err.message);
     // En cas d'erreur Google Calendar, retourner tous les créneaux comme disponibles
     // (plutôt que bloquer complètement le service)
-    const fallbackSlots = generateFallbackSlots(dur);
+    const fallbackSlots = generateFallbackSlots(dur, date);
     blockPendingSlots(fallbackSlots, date, dur);
     res.json({ slots: fallbackSlots, warning: 'Disponibilités Google Calendar non vérifiées.' });
   }
@@ -77,14 +77,17 @@ function blockPendingSlots(slots, date, requestedDuration) {
   });
 }
 
-function generateFallbackSlots(duration) {
+function generateFallbackSlots(duration, date) {
   const slots = [];
   const endH = 13;
+  const minBookingTime = new Date(Date.now() + 72 * 60 * 60 * 1000);
   let h = 8, m = 30;
   while (true) {
     const endMin = h * 60 + m + duration;
     if (endMin > endH * 60) break;
-    slots.push({ time: `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`, available: true });
+    const timeStr  = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    const slotStart = new Date(`${date}T${timeStr}:00+01:00`);
+    slots.push({ time: timeStr, available: slotStart >= minBookingTime });
     m += 90;
     if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
   }

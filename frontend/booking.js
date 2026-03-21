@@ -378,6 +378,7 @@
     }
 
     // Jours du mois
+    const minBooking = new Date(Date.now() + 72 * 60 * 60 * 1000);
     for (let d = 1; d <= lastDay.getDate(); d++) {
       const date = new Date(year, month, d);
       date.setHours(0,0,0,0);
@@ -385,9 +386,12 @@
       const isToday   = date.getTime() === today.getTime();
       const dateStr   = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isSelected= state.date === dateStr;
+      // Dernier créneau = 11h30 → bloquer si avant minBooking
+      const lastSlot  = new Date(year, month, d, 11, 30, 0);
+      const isTooSoon = lastSlot < minBooking;
 
       let cls = 'bk-cal-day';
-      if (isPast)     cls += ' disabled';
+      if (isPast || isTooSoon) cls += ' disabled';
       if (isToday)    cls += ' today';
       if (isSelected) cls += ' selected';
 
