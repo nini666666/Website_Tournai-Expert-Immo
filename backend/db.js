@@ -66,16 +66,17 @@ try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_prenom TEXT NOT NULL
 try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_nom TEXT NOT NULL DEFAULT ''`); } catch (_) {}
 try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_email TEXT NOT NULL DEFAULT ''`); } catch (_) {}
 try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_telephone TEXT NOT NULL DEFAULT ''`); } catch (_) {}
+try { db.exec(`ALTER TABLE appointments ADD COLUMN notes TEXT NOT NULL DEFAULT ''`); } catch (_) {}
 
 const insertAppointment = db.prepare(`
   INSERT INTO appointments
     (token, category, service, service_label, property, property_label,
      extras, date, slot, duration, prenom, nom, email, telephone, adresse_bien, theme,
-     bailleur_prenom, bailleur_nom, bailleur_email, bailleur_telephone)
+     bailleur_prenom, bailleur_nom, bailleur_email, bailleur_telephone, notes)
   VALUES
     (@token, @category, @service, @service_label, @property, @property_label,
      @extras, @date, @slot, @duration, @prenom, @nom, @email, @telephone, @adresse_bien, @theme,
-     @bailleur_prenom, @bailleur_nom, @bailleur_email, @bailleur_telephone)
+     @bailleur_prenom, @bailleur_nom, @bailleur_email, @bailleur_telephone, @notes)
 `);
 
 const getByToken = db.prepare(`

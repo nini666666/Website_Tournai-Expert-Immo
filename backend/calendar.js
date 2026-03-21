@@ -117,7 +117,7 @@ async function getAvailableSlots(dateStr, duration) {
 // ─── Créer un événement dans Google Calendar ─────────────────────
 async function createCalendarEvent({ date, slot, duration, prenom, nom, email,
                                      telephone, service_label, property_label,
-                                     extras, adresse_bien,
+                                     extras, adresse_bien, notes,
                                      bailleur_prenom, bailleur_nom,
                                      bailleur_email, bailleur_telephone }) {
   const auth    = getOAuthClient();
@@ -146,6 +146,7 @@ async function createCalendarEvent({ date, slot, duration, prenom, nom, email,
     `Email : ${email}`,
     `Tél. : ${telephone}`,
     ...bailleurLines,
+    ...(notes ? [``, `Notes : ${notes}`] : []),
   ].join('\n');
 
   const event = await calendar.events.insert({
@@ -207,6 +208,7 @@ async function updateCalendarEvent(gcalId, { date, slot, duration, prenom, nom, 
     `Email : ${email}`,
     `Tél. : ${telephone}`,
     ...bailleurLines,
+    ...(notes ? [``, `Notes : ${notes}`] : []),
   ].join('\n');
 
   await cal.events.patch({

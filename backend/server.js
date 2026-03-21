@@ -104,7 +104,7 @@ app.post('/api/appointments', async (req, res) => {
     category, service, service_label, property, property_label,
     extras, date, slot, duration,
     prenom, nom, email, telephone, adresse_bien,
-    theme,
+    theme, notes,
     bailleur_prenom, bailleur_nom, bailleur_email, bailleur_telephone,
   } = req.body;
 
@@ -144,6 +144,7 @@ app.post('/api/appointments', async (req, res) => {
       bailleur_nom:       bailleur_nom       || '',
       bailleur_email:     bailleur_email     || '',
       bailleur_telephone: bailleur_telephone || '',
+      notes:              notes              || '',
     });
 
     // Notification à l'admin (async, ne bloque pas la réponse si ça échoue)

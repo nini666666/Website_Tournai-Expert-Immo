@@ -635,6 +635,29 @@ body:not(.dark) #bk-overlay {
   caret-color: #EFFBDB;
 }
 
+/* ─── Textarea ─── */
+.bk-textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding: .5rem 0;
+}
+
+/* ─── Tag optionnel ─── */
+.bk-optional-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: .5rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+  border: 1px solid var(--bk-line);
+  padding: .15rem .4rem;
+  vertical-align: middle;
+  margin-left: .5rem;
+}
+
 /* ─── Étape 6 : mise en page compacte (beaucoup de champs) ─── */
 #bk-step-6 {
   padding-top: 1.5rem;

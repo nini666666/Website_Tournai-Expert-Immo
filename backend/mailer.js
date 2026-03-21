@@ -72,6 +72,7 @@ async function sendAdminNotification(appt) {
         <tr><td>Client</td><td>${appt.prenom} ${appt.nom}</td></tr>
         <tr><td>Email</td><td>${appt.email}</td></tr>
         <tr><td>Téléphone</td><td>${appt.telephone}</td></tr>
+        ${appt.notes ? `<tr><td>Notes</td><td>${appt.notes}</td></tr>` : ''}
       </table>
 
       <div class="btn-row">
@@ -140,6 +141,7 @@ async function sendClientConfirmation(appt) {
         <tr><td style="width:46%;padding:18px 0;border-bottom:1px solid ${sep};font-family:monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#8FA464;vertical-align:top">Adresse</td><td style="padding:18px 0;border-bottom:1px solid ${sep};font-size:.95rem;font-weight:300;vertical-align:top">${appt.adresse_bien}</td></tr>
         <tr><td style="width:46%;padding:18px 0;border-bottom:1px solid ${sep};font-family:monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#8FA464;vertical-align:top">Date</td><td style="padding:18px 0;border-bottom:1px solid ${sep};font-size:.95rem;font-weight:300;vertical-align:top">${dateFr}</td></tr>
         <tr><td style="width:46%;padding:18px 0;border-bottom:1px solid ${sep};font-family:monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#8FA464;vertical-align:top">Horaire</td><td style="padding:18px 0;border-bottom:1px solid ${sep};font-size:.95rem;font-weight:300;vertical-align:top">${appt.slot}</td></tr>
+        ${appt.notes ? `<tr><td style="width:46%;padding:18px 0;border-bottom:1px solid ${sep};font-family:monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#8FA464;vertical-align:top">Notes</td><td style="padding:18px 0;border-bottom:1px solid ${sep};font-size:.95rem;font-weight:300;vertical-align:top">${appt.notes}</td></tr>` : ''}
       </table>
 
       <p class="note">

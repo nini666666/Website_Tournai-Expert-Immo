@@ -578,6 +578,7 @@
       { key: 'Bailleur',        val: `${state.form.bailleur_prenom || ''} ${state.form.bailleur_nom || ''}`.trim() || '—' },
       { key: 'Email bailleur',  val: state.form.bailleur_email      || '—' },
       { key: 'Tél. bailleur',   val: state.form.bailleur_telephone  || '—' },
+      { key: 'Notes',           val: state.form.notes               || '—' },
     ];
 
     c.innerHTML = rows.map(r => `
@@ -683,6 +684,7 @@
       slot:          state.slot,
       duration:      state.duration,
       theme:         document.body.classList.contains('dark') ? 'dark' : 'light',
+      notes:         state.form.notes || '',
       ...state.form,
     };
 
