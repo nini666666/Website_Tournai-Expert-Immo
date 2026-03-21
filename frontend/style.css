@@ -728,7 +728,7 @@ body::before {
   .nav-links { display: none !important; }
   .burger { display: flex; }
 
-  #page-home { padding: 0 1.5rem 3rem; }
+  #page-home { padding: 0 1.5rem 8rem; }
   .hero-title { font-size: clamp(2rem, 9vw, 3.5rem); }
   .hero-bottom { flex-direction: column; gap: 2rem; align-items: flex-start; }
   .hero-tagline { font-size: .9rem; max-width: 100%; }
