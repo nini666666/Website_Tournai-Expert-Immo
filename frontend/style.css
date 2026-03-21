@@ -724,7 +724,7 @@ body::before {
     padding: 1.2rem 1.5rem;
     justify-content: space-between;
   }
-  .logo { display: block; font-size: .8rem; letter-spacing: .15em; white-space: nowrap; }
+  .logo { display: block; font-size: .8rem; letter-spacing: .15em; white-space: nowrap; padding-left: 0; }
   .nav-links { display: none !important; }
   .burger { display: flex; }
 
