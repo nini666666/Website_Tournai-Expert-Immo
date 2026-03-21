@@ -80,7 +80,8 @@ function blockPendingSlots(slots, date, requestedDuration) {
 function generateFallbackSlots(duration, date) {
   const slots = [];
   const endH = 13;
-  const minBookingTime = new Date(Date.now() + 72 * 60 * 60 * 1000);
+  const leadHours = (new Date().getDay() === 6) ? 96 : 72;
+  const minBookingTime = new Date(Date.now() + leadHours * 60 * 60 * 1000);
   let h = 8, m = 30;
   while (true) {
     const endMin = h * 60 + m + duration;

@@ -378,7 +378,8 @@
     }
 
     // Jours du mois
-    const minBooking = new Date(Date.now() + 72 * 60 * 60 * 1000);
+    const leadHours  = (new Date().getDay() === 6) ? 96 : 72;
+    const minBooking = new Date(Date.now() + leadHours * 60 * 60 * 1000);
     for (let d = 1; d <= lastDay.getDate(); d++) {
       const date = new Date(year, month, d);
       date.setHours(0,0,0,0);

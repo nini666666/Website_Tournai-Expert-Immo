@@ -90,8 +90,9 @@ function isSlotFree(timeStr, duration, busyPeriods, dateStr, timezone = 'Europe/
   // Dimanche : pas de travail
   if (slotStart.getDay() === 0) return false;
 
-  // Minimum 72h de délai avant réservation
-  const minBookingTime = new Date(Date.now() + 72 * 60 * 60 * 1000);
+  // Minimum 72h, +24h si on est samedi (jour de repos le dimanche)
+  const leadHours = (new Date().getDay() === 6) ? 96 : 72;
+  const minBookingTime = new Date(Date.now() + leadHours * 60 * 60 * 1000);
   if (slotStart < minBookingTime) return false;
 
   for (const period of busyPeriods) {
