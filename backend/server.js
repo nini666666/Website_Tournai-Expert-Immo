@@ -47,15 +47,35 @@ app.get('/api/slots', async (req, res) => {
 
   try {
     const slots = await calendar.getAvailableSlots(date, dur);
+    blockPendingSlots(slots, date, dur);
     res.json({ slots });
   } catch (err) {
     console.error('[/api/slots]', err.message);
     // En cas d'erreur Google Calendar, retourner tous les créneaux comme disponibles
     // (plutôt que bloquer complètement le service)
     const fallbackSlots = generateFallbackSlots(dur);
+    blockPendingSlots(fallbackSlots, date, dur);
     res.json({ slots: fallbackSlots, warning: 'Disponibilités Google Calendar non vérifiées.' });
   }
 });
+
+// Marque comme indisponibles les créneaux qui chevauchent un RDV pending ou confirmed en DB
+function blockPendingSlots(slots, date, requestedDuration) {
+  const booked = db.getPendingOrConfirmedOnDate.all(date);
+  if (!booked.length) return;
+  const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  slots.forEach(slot => {
+    if (!slot.available) return;
+    const sStart = toMin(slot.time);
+    const sEnd   = sStart + requestedDuration;
+    for (const b of booked) {
+      const bStart = toMin(b.slot);
+      const bEnd   = bStart + b.duration;
+      // Chevauchement si les deux périodes se recouvrent
+      if (sStart < bEnd && sEnd > bStart) { slot.available = false; break; }
+    }
+  });
+}
 
 function generateFallbackSlots(duration) {
   const slots = [];

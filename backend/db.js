@@ -99,6 +99,12 @@ const getConfirmedOnDate = db.prepare(`
   WHERE date = ? AND status = 'confirmed'
 `);
 
+// Inclut les pending pour bloquer le créneau dès la soumission
+const getPendingOrConfirmedOnDate = db.prepare(`
+  SELECT slot, duration FROM appointments
+  WHERE date = ? AND status IN ('pending', 'confirmed')
+`);
+
 const rescheduleAppointment = db.prepare(`
   UPDATE appointments
   SET date = @date, slot = @slot
@@ -112,5 +118,6 @@ module.exports = {
   confirmAppointment,
   rejectAppointment,
   getConfirmedOnDate,
+  getPendingOrConfirmedOnDate,
   rescheduleAppointment,
 };
