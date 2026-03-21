@@ -399,6 +399,31 @@
 
   /* ─── Étape 5 : Créneaux ─── */
 
+  function changeDay(delta) {
+    const d = new Date(state.date + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    if (d < today) return;
+    state.date = d.getFullYear() + '-'
+      + String(d.getMonth() + 1).padStart(2, '0') + '-'
+      + String(d.getDate()).padStart(2, '0');
+    state.slot = null;
+    updateNav();
+    renderSlots();
+  }
+
+  function updateDayNav() {
+    const today   = new Date(); today.setHours(0, 0, 0, 0);
+    const dateObj = new Date(state.date + 'T00:00:00');
+    const label   = dateObj.toLocaleDateString('fr-BE', { weekday: 'long', day: 'numeric', month: 'long' });
+    document.getElementById('bk-day-label').textContent =
+      label.charAt(0).toUpperCase() + label.slice(1);
+    const prevBtn = document.getElementById('bk-day-prev');
+    prevBtn.disabled = dateObj.getTime() <= today.getTime();
+    prevBtn.onclick  = () => changeDay(-1);
+    document.getElementById('bk-day-next').onclick = () => changeDay(1);
+  }
+
   function appendNextDayBtn(container) {
     const btn = document.createElement('button');
     btn.className = 'bk-next-day-btn';
@@ -468,6 +493,7 @@
   }
 
   async function renderSlots() {
+    updateDayNav();
     const container = document.getElementById('bk-slots-grid');
     container.innerHTML = `<div class="bk-slots-loading">Vérification des disponibilités…</div>`;
     btnNext.disabled = true;

@@ -463,6 +463,40 @@ body:not(.dark) #bk-overlay {
   pointer-events: none;
 }
 
+/* ─── ÉTAPE 5 : Navigation jour ─── */
+.bk-day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--bk-line);
+  padding-bottom: 1rem;
+}
+.bk-day-nav-btn {
+  background: none;
+  border: 1px solid var(--bk-line);
+  color: var(--bk-ink);
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .25s, color .25s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-day-nav-btn:hover:not(:disabled) { border-color: var(--bk-accent); color: var(--bk-accent); }
+.bk-day-nav-btn:disabled { opacity: .25; pointer-events: none; }
+.bk-day-nav-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 300;
+  letter-spacing: .01em;
+  color: var(--bk-ink);
+  text-align: center;
+  flex: 1;
+}
+
 /* ─── ÉTAPE 5 : Créneaux ─── */
 .bk-slots-grid {
   display: grid;
