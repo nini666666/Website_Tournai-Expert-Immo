@@ -243,7 +243,7 @@ sendAdminNotification → Email HTML à Denis
 ## Déploiement (`deploy.py`)
 
 ```bash
-# Déploiement complet
+# Déploiement complet (git commit + push + NAS)
 python deploy.py
 
 # Backend seulement
@@ -251,7 +251,16 @@ python deploy.py --backend-only
 
 # Frontend seulement
 python deploy.py --frontend-only
+
+# Sans git (NAS uniquement)
+python deploy.py --no-git
 ```
+
+**Workflow** :
+1. `git add -A` + prompt message de commit (défaut : `"deploy"`)
+2. `git commit` + `git push origin master`
+3. Upload des fichiers sur le NAS via SSH/base64
+4. `docker-compose restart backend` (+ `nginx -s reload` si frontend touché)
 
 **Fichiers déployés** :
 - `backend/` : server.js, db.js, mailer.js, calendar.js, gmail-trash.js, package.json

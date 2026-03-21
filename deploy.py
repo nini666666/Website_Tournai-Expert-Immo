@@ -9,6 +9,7 @@
 # Docker-compose : /usr/local/bin/docker-compose
 
 import paramiko
+import subprocess
 import sys
 import os
 import base64
@@ -89,12 +90,36 @@ def restart_containers(ssh, restart_nginx=True):
         print('  -> reload nginx')
         ssh_run(ssh, f'{DC} -f {REMOTE}/docker-compose.yml exec -T nginx nginx -s reload 2>&1', sudo=True)
 
+def git_commit_push():
+    """Commit tous les fichiers modifiés et push sur GitHub."""
+    print('\n-- Git --')
+    result = subprocess.run(
+        ['git', 'status', '--porcelain'],
+        cwd=LOCAL_ROOT, capture_output=True, text=True
+    )
+    if not result.stdout.strip():
+        print('  Rien a committer.')
+        return
+
+    subprocess.run(['git', 'add', '-A'], cwd=LOCAL_ROOT, check=True)
+
+    msg = input('  Message de commit (Entrée = "deploy"): ').strip() or 'deploy'
+    subprocess.run(['git', 'commit', '-m', msg], cwd=LOCAL_ROOT, check=True)
+
+    subprocess.run(['git', 'push', 'origin', 'master'], cwd=LOCAL_ROOT, check=True)
+    print('  Push OK.')
+
+
 def main():
     args = sys.argv[1:]
     backend_only  = '--backend-only'  in args
     frontend_only = '--frontend-only' in args
+    skip_git      = '--no-git'        in args
 
-    print('-- Connexion au NAS --')
+    if not skip_git:
+        git_commit_push()
+
+    print('\n-- Connexion au NAS --')
     ssh = connect()
     print(f'  Connecte a {NAS_HOST}')
 
