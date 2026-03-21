@@ -518,6 +518,25 @@ body.dark .tarif-card:hover .tarif-divider    { background: rgba(39,62,70,.2); }
   line-height: 1.8; margin-top: 1rem;
 }
 
+/* ─── États des lieux : page complète sans scroll ─── */
+#page-etats .inner-page      { padding-top: 4rem; padding-bottom: 2rem; }
+#page-etats .page-title      { margin-bottom: 2rem; }
+#page-etats .services-intro  { font-size: .9rem; line-height: 1.7; margin-bottom: 2rem; }
+#page-etats .service-row     { padding: 1.5rem 0; gap: 2rem; }
+#page-etats .service-name    { font-size: clamp(1.3rem, 2vw, 2.2rem); }
+
+/* ─── À propos : page complète sans scroll ─── */
+#page-apropos .inner-page      { padding-top: 4rem; padding-bottom: 2rem; }
+#page-apropos .page-title      { font-size: clamp(2rem,4vw,4.5rem); margin-bottom: 2rem; }
+#page-apropos .about-grid      { grid-template-columns: 1.5fr 1fr; gap: 3rem; }
+#page-apropos .about-body      { font-size: .9rem; line-height: 1.7; }
+#page-apropos .about-body p    { margin-bottom: .6rem; }
+#page-apropos .about-highlight { font-size: .88rem; padding: .75rem 1.25rem; margin: .75rem 0; }
+#page-apropos .certif-badge    { margin-top: .75rem; }
+#page-apropos .about-stats     { gap: 1.5rem; }
+#page-apropos .stat            { padding-top: 1rem; }
+#page-apropos .stat-num        { font-size: clamp(2rem,3vw,3rem); }
+
 /* ─── Tarifs : page complète sans scroll ─── */
 #page-tarifs .inner-page      { padding-top: 4rem; padding-bottom: 2rem; }
 #page-tarifs .page-title      { font-size: clamp(2rem,4vw,4rem); margin-bottom: 1.5rem; }
