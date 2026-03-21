@@ -59,14 +59,14 @@ app.get('/api/slots', async (req, res) => {
 
 function generateFallbackSlots(duration) {
   const slots = [];
-  const endH = 14;
-  let h = 10, m = 0;
+  const endH = 13;
+  let h = 8, m = 30;
   while (true) {
     const endMin = h * 60 + m + duration;
     if (endMin > endH * 60) break;
     slots.push({ time: `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`, available: true });
-    m += 30;
-    if (m >= 60) { h++; m -= 60; }
+    m += 90;
+    if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
   }
   return slots;
 }

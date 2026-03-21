@@ -59,13 +59,13 @@ async function getBusySlots(dateStr) {
 }
 
 // ─── Générer les créneaux disponibles ────────────────────────────
-// Horaires : 10h00 – 14h00, incrément 30 min
+// Horaires : 08h30 – 18h00, incrément 90 min
 
 function generateSlots(duration) {
   const slots = [];
-  const startH = 10, endH = 14;
+  const endH = 13;
 
-  let h = startH, m = 0;
+  let h = 8, m = 30;
   while (true) {
     const endMin = h * 60 + m + duration;
     if (endMin > endH * 60) break;
@@ -73,8 +73,8 @@ function generateSlots(duration) {
     const label = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
     slots.push(label);
 
-    m += 30;
-    if (m >= 60) { h++; m -= 60; }
+    m += 90;
+    if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
   }
   return slots;
 }
