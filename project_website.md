@@ -10,6 +10,25 @@
 
 ---
 
+## Règle de travail — Workflow obligatoire
+
+> **À respecter systématiquement pour chaque correction ou évolution :**
+
+```
+1. Claude corrige le bug / développe la fonctionnalité
+2. Claude déploie sur le NAS et teste
+3. Denis valide ("ok", "ça marche", etc.)
+          ↓
+4. Claude met à jour les fichiers locaux (PC)    ← OBLIGATOIRE
+5. Claude commit + push sur GitHub               ← OBLIGATOIRE
+```
+
+**Aucune correction n'est considérée comme terminée tant que les fichiers PC et GitHub ne sont pas à jour.**
+
+Chaque commit doit décrire clairement le bug corrigé ou la fonctionnalité ajoutée.
+
+---
+
 ## Stack technique
 
 | Couche | Techno |
