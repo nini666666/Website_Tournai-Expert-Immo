@@ -19,7 +19,6 @@
       { id: 'entree',   name: "État des lieux d'entrée",  sub: "Entrée dans les lieux" },
       { id: 'sortie',   name: "État des lieux de sortie", sub: "Fin de bail" },
       { id: 'travaux',  name: "État des lieux de travaux",sub: "Avant / après chantier" },
-      { id: 'constat',  name: "Constat contradictoire",   sub: "Résolution de litige" },
     ],
   };
 
@@ -74,12 +73,47 @@
   function openModal() {
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
+    history.pushState({ bkModal: true }, '');
     resetWizard();
+  }
+
+  // Ouvre le modal en pré-sélectionnant catégorie + service → saute à l'étape 3 sans animation
+  function openModalPreset(category, service) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    history.pushState({ bkModal: true }, '');
+    // Reset state directement sans passer par resetWizard (qui afficherait step 1)
+    Object.assign(state, {
+      step: 3, category, service,
+      duration: DURATION[category],
+      property: null, extraMeuble: false, extraPieces: 0,
+      date: null, slot: null, form: {},
+    });
+    // Afficher step 3 directement sans transition
+    document.querySelectorAll('.bk-step').forEach(s => {
+      s.classList.remove('active');
+      s.style.transform = '';
+      s.style.opacity   = '';
+      s.style.pointerEvents = '';
+    });
+    const step3 = document.getElementById('bk-step-3');
+    if (step3) step3.classList.add('active');
+    renderProperties();
+    updateProgress();
+    updateNav();
   }
 
   function closeModal() {
     overlay.classList.remove('open');
     document.body.style.overflow = '';
+    // Retirer le focus de tout champ du modal pour bloquer la saisie clavier
+    if (document.activeElement && overlay.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+    // Dépiler l'état modal si c'est bien lui qui est au sommet
+    if (history.state && history.state.bkModal) {
+      history.back();
+    }
   }
 
   function resetWizard() {
@@ -365,6 +399,74 @@
 
   /* ─── Étape 5 : Créneaux ─── */
 
+  function appendNextDayBtn(container) {
+    const btn = document.createElement('button');
+    btn.className = 'bk-next-day-btn';
+    btn.innerHTML = `Rendez-vous suivant <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    btn.addEventListener('click', () => scanNextAvailableSlot(container, btn));
+    container.appendChild(btn);
+  }
+
+  async function scanNextAvailableSlot(container, btn) {
+    btn.disabled = true;
+    btn.innerHTML = `Recherche en cours… <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+    let d = new Date(state.date + 'T00:00:00');
+
+    for (let i = 0; i < 60; i++) {
+      d.setDate(d.getDate() + 1);
+      // Construire dateStr depuis la date LOCALE (toISOString = UTC → décalage d'un jour en UTC+1/+2)
+      const dateStr = d.getFullYear() + '-'
+        + String(d.getMonth() + 1).padStart(2, '0') + '-'
+        + String(d.getDate()).padStart(2, '0');
+      try {
+        const res = await fetch(`/api/slots?date=${dateStr}&duration=${state.duration}`);
+        if (!res.ok) continue;
+        const { slots } = await res.json();
+        const available = slots && slots.filter(s => s.available);
+        if (available && available.length > 0) {
+          state.date = dateStr;
+          state.slot = null; // le client choisit parmi les créneaux affichés
+          updateNav();
+
+          // Afficher la date trouvée + tous les créneaux disponibles
+          const dateLabel = d.toLocaleDateString('fr-BE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+          container.innerHTML = '';
+
+          const header = document.createElement('div');
+          header.className = 'bk-slots-found';
+          header.innerHTML = `
+            <div class="bk-slots-found-label">Prochain créneau disponible</div>
+            <div class="bk-slots-found-value">${dateLabel}</div>`;
+          container.appendChild(header);
+
+          available.forEach(s => {
+            const slotBtn = document.createElement('button');
+            slotBtn.className = 'bk-slot';
+            slotBtn.textContent = s.time;
+            slotBtn.addEventListener('click', () => {
+              state.slot = s.time;
+              container.querySelectorAll('.bk-slot').forEach(b => b.classList.remove('selected'));
+              slotBtn.classList.add('selected');
+              updateNav();
+              setTimeout(() => goNext(), 250);
+            });
+            container.appendChild(slotBtn);
+          });
+
+          return;
+        }
+      } catch (e) { continue; }
+    }
+
+    // Aucun créneau trouvé dans les 60 prochains jours
+    btn.disabled = false;
+    btn.innerHTML = `Rendez-vous suivant <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const msg = container.querySelector('.bk-slots-loading');
+    if (msg) msg.textContent = 'Aucun créneau disponible dans les 60 prochains jours. Veuillez nous appeler.';
+  }
+
   async function renderSlots() {
     const container = document.getElementById('bk-slots-grid');
     container.innerHTML = `<div class="bk-slots-loading">Vérification des disponibilités…</div>`;
@@ -376,8 +478,16 @@
       const { slots } = await res.json();
 
       container.innerHTML = '';
-      if (!slots || slots.length === 0) {
-        container.innerHTML = `<div class="bk-slots-loading">Aucun créneau disponible ce jour.</div>`;
+
+      const noSlots = !slots || slots.length === 0;
+      const allTaken = !noSlots && slots.every(s => !s.available);
+
+      if (noSlots || allTaken) {
+        const msg = document.createElement('div');
+        msg.className = 'bk-slots-loading';
+        msg.textContent = 'Aucun créneau disponible ce jour.';
+        container.appendChild(msg);
+        appendNextDayBtn(container);
         return;
       }
 
@@ -432,6 +542,9 @@
       { key: 'Email',         val: state.form.email || '—' },
       { key: 'Téléphone',     val: state.form.telephone || '—' },
       { key: 'Adresse bien',  val: state.form.adresse_bien || '—' },
+      { key: 'Bailleur',        val: `${state.form.bailleur_prenom || ''} ${state.form.bailleur_nom || ''}`.trim() || '—' },
+      { key: 'Email bailleur',  val: state.form.bailleur_email      || '—' },
+      { key: 'Tél. bailleur',   val: state.form.bailleur_telephone  || '—' },
     ];
 
     c.innerHTML = rows.map(r => `
@@ -477,6 +590,7 @@
     let valid = true;
     form.querySelectorAll('.bk-input').forEach(input => {
       input.classList.remove('error');
+      if (input.dataset.optional) return; // champs facultatifs (bailleur)
       if (!input.value.trim()) {
         input.classList.add('error');
         valid = false;
@@ -493,6 +607,12 @@
     form.querySelectorAll('.bk-input').forEach(input => {
       state.form[input.name] = input.value.trim();
     });
+    // Recombiner l'adresse pour le backend
+    const rue = state.form.rue || '';
+    const num = state.form.numero || '';
+    const cp  = state.form.code_postal || '';
+    const vil = state.form.ville || '';
+    state.form.adresse_bien = `${rue} ${num}, ${cp} ${vil}`.trim();
   }
 
   /* ─── Soumission ─── */
@@ -519,6 +639,7 @@
       date:          state.date,
       slot:          state.slot,
       duration:      state.duration,
+      theme:         document.body.classList.contains('dark') ? 'dark' : 'light',
       ...state.form,
     };
 
@@ -533,22 +654,27 @@
     } catch (err) {
       btnNext.disabled = false;
       btnNext.textContent = 'Envoyer la demande';
-      alert("Une erreur est survenue. Veuillez réessayer ou nous contacter par téléphone.");
+      alert("Une erreur est survenue. Veuillez réessayer ou nous contacter directement au +32 476/03.27.88.");
     }
   }
 
   /* ─── Initialisation ─── */
 
   function init() {
-    if (!overlay || !btnOpen) return;
+    if (!overlay) return;
 
-    btnOpen.addEventListener('click', openModal);
+    // Tous les boutons d'ouverture (contact + page rendez-vous)
+    document.querySelectorAll('.bk-trigger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.dataset.bkCategory;
+        const svc = btn.dataset.bkService;
+        if (cat && svc) openModalPreset(cat, svc);
+        else            openModal();
+      });
+    });
     btnClose.addEventListener('click', closeModal);
 
-    // Fermer en cliquant hors du panel
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) closeModal();
-    });
+    // Fermeture uniquement via le bouton X ou la touche Échap (pas au clic sur l'overlay)
 
     // Échap
     document.addEventListener('keydown', e => {

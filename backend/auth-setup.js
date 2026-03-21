@@ -20,6 +20,7 @@ const TOKENS_PATH = path.join(__dirname, 'tokens.json');
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar',
   'https://www.googleapis.com/auth/calendar.events',
+  'https://mail.google.com/',
 ];
 
 const client = new google.auth.OAuth2(

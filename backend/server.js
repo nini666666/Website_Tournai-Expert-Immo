@@ -6,6 +6,7 @@ const { v4: uuid } = require('uuid');
 const db        = require('./db');
 const calendar  = require('./calendar');
 const mailer    = require('./mailer');
+const gmailTrash = require('./gmail-trash');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -78,6 +79,8 @@ app.post('/api/appointments', async (req, res) => {
     category, service, service_label, property, property_label,
     extras, date, slot, duration,
     prenom, nom, email, telephone, adresse_bien,
+    theme,
+    bailleur_prenom, bailleur_nom, bailleur_email, bailleur_telephone,
   } = req.body;
 
   // Validation minimale
@@ -111,6 +114,11 @@ app.post('/api/appointments', async (req, res) => {
       email,
       telephone,
       adresse_bien,
+      theme:              theme === 'light' ? 'light' : 'dark',
+      bailleur_prenom:    bailleur_prenom    || '',
+      bailleur_nom:       bailleur_nom       || '',
+      bailleur_email:     bailleur_email     || '',
+      bailleur_telephone: bailleur_telephone || '',
     });
 
     // Notification à l'admin (async, ne bloque pas la réponse si ça échoue)
@@ -156,8 +164,10 @@ app.get('/api/appointments/confirm/:token', async (req, res) => {
     // Envoyer la confirmation au client
     await mailer.sendClientConfirmation(appt);
 
-    res.send(htmlPage('Rendez-vous confirmé ✓',
-      `Le rendez-vous de <strong>${appt.prenom} ${appt.nom}</strong> le <strong>${appt.date}</strong> à <strong>${appt.slot}</strong> a été confirmé.<br>Un email de confirmation a été envoyé au client.`));
+    // Supprimer l'email admin de la boîte Gmail (non-bloquant)
+    gmailTrash.trashAdminEmail(appt.token).catch(() => {});
+
+    res.send(closePage());
   } catch (err) {
     console.error('[/confirm]', err.message);
     res.status(500).send(htmlPage('Erreur', 'Une erreur est survenue. ' + err.message));
@@ -183,13 +193,318 @@ app.get('/api/appointments/reject/:token', async (req, res) => {
     db.rejectAppointment.run(appt.token);
     await mailer.sendClientRejection(appt);
 
-    res.send(htmlPage('Rendez-vous refusé',
-      `La demande de <strong>${appt.prenom} ${appt.nom}</strong> a été refusée.<br>Un email d'information a été envoyé au client.`));
+    // Supprimer l'email admin de la boîte Gmail (non-bloquant)
+    gmailTrash.trashAdminEmail(appt.token).catch(() => {});
+
+    res.send(closePage());
   } catch (err) {
     console.error('[/reject]', err.message);
     res.status(500).send(htmlPage('Erreur', 'Une erreur est survenue. ' + err.message));
   }
 });
+
+// ─── GET /api/appointments/reschedule/:token ──────────────────────
+// Page de replanification — calendrier interactif pour l'admin
+
+app.get('/api/appointments/reschedule/:token', (req, res) => {
+  // Forcer une URL unique pour contourner le cache du navigateur Gmail
+  if (!req.query._v) {
+    return res.redirect(302, `/api/appointments/reschedule/${req.params.token}?_v=${Date.now()}`);
+  }
+
+  const appt = db.getByToken.get(req.params.token);
+  if (!appt) return res.status(404).send(htmlPage('Introuvable', 'Ce lien est invalide.'));
+  if (appt.status !== 'pending') return res.send(htmlPage('Déjà traité',
+    `Ce rendez-vous a déjà été <strong>${appt.status === 'confirmed' ? 'confirmé' : 'replanifié'}</strong>.`));
+
+  const currentDateFr = new Date(appt.date + 'T00:00:00').toLocaleDateString('fr-BE', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  res.set('Cache-Control', 'no-store');
+  res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Replanifier — Tournai Expert Immo</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Georgia,serif;background:#10212B;color:#EFFBDB;min-height:100vh;padding:32px 20px}
+    .wrap{max-width:600px;margin:0 auto}
+    h1{font-size:1.6rem;font-weight:300;letter-spacing:-.02em;margin:0 0 8px}
+    .sub{font-family:monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#8FA464;margin-bottom:28px}
+    .info{border:1px solid rgba(143,164,100,.2);padding:20px;margin-bottom:28px}
+    .info-row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(143,164,100,.1);font-size:.9rem;font-weight:300}
+    .info-row:last-child{border-bottom:none}
+    .lbl{font-family:monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:#8FA464;width:110px;flex-shrink:0;padding-top:3px}
+    .section-title{font-family:monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#8FA464;margin-bottom:14px}
+    .cal-wrap{margin-bottom:24px}
+    .cal-header-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+    .cal-hd{font-family:monospace;font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;text-align:center;color:rgba(239,251,219,.35);padding:4px 0}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .cal-day{padding:6px 4px 4px;text-align:center;font-size:.85rem;font-weight:300;cursor:pointer;border:1px solid transparent;transition:border-color .2s;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .cal-day:hover:not(.disabled){border-color:rgba(143,164,100,.4)}
+    .cal-day.selected{background:#8FA464;color:#10212B}
+    .cal-day.disabled{opacity:.2;cursor:default}
+    .cal-day.today{border-color:#e05555 !important}
+    .cal-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .cal-dot.green{background:#5cb85c}
+    .cal-dot.red{background:#e05555}
+    .slots-wrap{margin-bottom:80px;min-height:40px}
+    .slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .slot{font-family:monospace;font-size:.8rem;padding:10px 4px;border:1px solid rgba(143,164,100,.3);background:none;color:#EFFBDB;cursor:pointer;transition:background .15s;text-align:center}
+    .slot:hover:not(.busy){background:rgba(143,164,100,.15)}
+    .slot.selected{background:#8FA464;color:#10212B;border-color:#8FA464}
+    .slot.busy{opacity:.2;cursor:default;text-decoration:line-through}
+    .loading{font-family:monospace;font-size:.6rem;color:rgba(239,251,219,.4)}
+    .btn-submit{font-family:monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;padding:16px 0;background:#8FA464;color:#10212B;border:none;cursor:pointer;display:none;position:fixed;bottom:0;left:0;right:0;width:100%;text-align:center}
+    .btn-submit.show{display:block}
+    @media(prefers-color-scheme:light){
+      body{background:#C9D8DC;color:#10212B}
+      .slot{color:#10212B}
+      .slot.selected{color:#10212B}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sub">Tournai Expert Immo — Replanifier</div>
+  <h1>Choisir un nouveau<br>créneau</h1>
+  <div class="info">
+    <div class="info-row"><span class="lbl">Client</span>${appt.prenom} ${appt.nom}</div>
+    <div class="info-row"><span class="lbl">Prestation</span>${appt.service_label}</div>
+    <div class="info-row"><span class="lbl">Adresse</span>${appt.adresse_bien}</div>
+    <div class="info-row"><span class="lbl">Créneau actuel</span>${currentDateFr} à ${appt.slot}</div>
+  </div>
+
+  <div class="cal-wrap">
+    <div class="section-title" id="cal-month"></div>
+    <div class="cal-header-row">
+      <div class="cal-hd">Lun</div><div class="cal-hd">Mar</div><div class="cal-hd">Mer</div>
+      <div class="cal-hd">Jeu</div><div class="cal-hd">Ven</div><div class="cal-hd">Sam</div>
+      <div class="cal-hd">Dim</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div class="slots-wrap" id="slots-wrap" style="display:none">
+    <div class="section-title" id="slots-title"></div>
+    <div class="slots-grid" id="slots-grid"></div>
+  </div>
+
+  <button class="btn-submit" id="btn-submit" onclick="submitReschedule()">Valider ce créneau</button>
+</div>
+<script>
+  const DURATION = ${appt.duration};
+  let selDate = null, selSlot = null;
+
+  function buildCal() {
+    const grid = document.getElementById('cal-grid');
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    // Démarrer au lundi de la semaine courante
+    const start = new Date(today);
+    const dow = start.getDay() || 7;
+    if (dow !== 1) start.setDate(start.getDate() - (dow - 1));
+
+    const mo = today.toLocaleDateString('fr-BE', { month: 'long', year: 'numeric' });
+    document.getElementById('cal-month').textContent = mo.charAt(0).toUpperCase() + mo.slice(1);
+
+    const futureDates = [];
+    const elMap = {};
+
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      const el = document.createElement('div');
+      el.className = 'cal-day';
+
+      const isToday = d.getTime() === today.getTime();
+      const isPast  = d < today;   // strictement avant aujourd'hui
+      const isSun   = d.getDay() === 0;
+
+      if (isPast) {
+        // Cellule vide — pas de numéro, pas de boule, pas d'interaction
+        el.style.visibility = 'hidden';
+      } else if (isSun) {
+        // Dimanche : numéro visible mais grisé, non cliquable
+        const num = document.createElement('span');
+        num.textContent = d.getDate();
+        el.appendChild(num);
+        el.classList.add('disabled');
+      } else {
+        // Aujourd'hui ou jour futur (lundi→samedi) : cliquable + boule de dispo
+        const num = document.createElement('span');
+        num.textContent = d.getDate();
+        el.appendChild(num);
+
+        const dot = document.createElement('span');
+        dot.className = 'cal-dot';
+        el.appendChild(dot);
+
+        if (isToday) el.classList.add('today');
+
+        const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        el.dataset.date = ds;
+        el.addEventListener('click', () => pickDate(el, ds, d));
+        futureDates.push(ds);
+        elMap[ds] = dot;
+      }
+      grid.appendChild(el);
+    }
+
+    // Charger la disponibilité de tous les jours en parallèle
+    futureDates.forEach(ds => {
+      fetch('/api/slots?date=' + ds + '&duration=' + DURATION)
+        .then(r => r.json())
+        .then(data => {
+          const slots = data.slots || data;
+          const hasAvail = slots.some(s => s.available);
+          const dot = elMap[ds];
+          if (dot) dot.classList.add(hasAvail ? 'green' : 'red');
+        })
+        .catch(() => {
+          // En cas d'erreur API, afficher rouge (prudence = indisponible)
+          const dot = elMap[ds];
+          if (dot) dot.classList.add('red');
+        });
+    });
+  }
+
+  function pickDate(el, ds, d) {
+    document.querySelectorAll('.cal-day').forEach(x => x.classList.remove('selected'));
+    el.classList.add('selected');
+    selDate = ds; selSlot = null;
+    document.getElementById('btn-submit').classList.remove('show');
+    const title = d.toLocaleDateString('fr-BE', { weekday:'long', day:'numeric', month:'long' });
+    document.getElementById('slots-title').textContent = title.charAt(0).toUpperCase() + title.slice(1);
+    const sw = document.getElementById('slots-wrap');
+    sw.style.display = 'block';
+    document.getElementById('slots-grid').innerHTML = '<span class="loading">Chargement…</span>';
+    fetch('/api/slots?date=' + ds + '&duration=' + DURATION)
+      .then(r => r.json()).then(data => {
+        const slots = data.slots || data;
+        const g = document.getElementById('slots-grid');
+        g.innerHTML = '';
+        slots.forEach(s => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.textContent = s.time;
+          b.className = 'slot' + (s.available ? '' : ' busy');
+          if (s.available) b.addEventListener('click', () => pickSlot(b, s.time));
+          g.appendChild(b);
+        });
+        // Auto-scroll vers les créneaux sur mobile
+        document.getElementById('slots-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+  }
+
+  function pickSlot(btn, time) {
+    document.querySelectorAll('.slot').forEach(x => x.classList.remove('selected'));
+    btn.classList.add('selected');
+    selSlot = time;
+    document.getElementById('btn-submit').classList.add('show');
+  }
+
+  buildCal();
+
+  async function submitReschedule() {
+    if (!selDate || !selSlot) return;
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+    try {
+      const res = await fetch('/api/appointments/reschedule/${appt.token}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: selDate, slot: selSlot }),
+      });
+      if (res.ok) {
+        btn.textContent = '✓ Replanifié';
+        // Retour à Gmail comme pour la confirmation
+        setTimeout(() => {
+          if (!window.close()) history.go(-(history.length));
+          window.close();
+        }, 800);
+      } else {
+        btn.textContent = 'Erreur — réessayez';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      btn.textContent = 'Erreur réseau';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body></html>`);
+});
+
+// ─── POST /api/appointments/reschedule/:token ─────────────────────
+// Valide le nouveau créneau choisi par l'admin
+
+app.post('/api/appointments/reschedule/:token', async (req, res) => {
+  const appt = db.getByToken.get(req.params.token);
+  if (!appt) return res.status(404).send(htmlPage('Introuvable', 'Lien invalide.'));
+  if (appt.status !== 'pending') return res.send(closePage());
+
+  const { date, slot } = req.body;
+  if (!date || !slot) return res.status(400).send(htmlPage('Erreur', 'Date ou créneau manquant.'));
+
+  try {
+    // Créer l'événement Google Calendar (comme pour une confirmation)
+    let gcalId = appt.gcal_event_id || null;
+    try {
+      if (gcalId) {
+        await calendar.updateCalendarEvent(gcalId, { ...appt, date, slot });
+      } else {
+        gcalId = await calendar.createCalendarEvent({ ...appt, date, slot });
+      }
+    } catch (e) { console.error('[reschedule] gcal:', e.message); }
+
+    // Mettre à jour la DB : nouveau créneau + confirmer le RDV
+    db.rescheduleAppointment.run({ date, slot, token: appt.token });
+    db.confirmAppointment.run(gcalId, appt.token);
+
+    // Supprimer l'email admin dès maintenant (avant sendClientReschedule pour éviter
+    // toute interférence Gmail entre l'envoi SMTP et la recherche API)
+    gmailTrash.trashAdminEmail(appt.token).catch(() => {});
+
+    // Envoyer email au client avec le nouveau créneau
+    await mailer.sendClientReschedule({ ...appt, date, slot });
+
+    res.send(closePage());
+  } catch (err) {
+    console.error('[/reschedule]', err.message);
+    res.status(500).send(htmlPage('Erreur', err.message));
+  }
+});
+
+// ─── Page auto-fermeture (succès confirm/reject admin) ───────────
+// Ferme l'onglet immédiatement — retourne à Gmail sans rien afficher.
+
+function closePage() {
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OK</title>
+  <style>
+    body { font-family: Georgia, serif; background: #10212B; color: #EFFBDB;
+           display: flex; align-items: center; justify-content: center;
+           min-height: 100vh; margin: 0; }
+    p { font-family: monospace; font-size: .65rem; letter-spacing: .15em;
+        text-transform: uppercase; color: #8FA464; }
+    @media (prefers-color-scheme: light) {
+      body { background: #C9D8DC; }
+    }
+  </style>
+</head>
+<body>
+  <p>✓ Traité</p>
+  <script>window.close();</script>
+</body>
+</html>`;
+}
 
 // ─── Page HTML simple pour les réponses admin ────────────────────
 
@@ -199,6 +514,7 @@ function htmlPage(title, message) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="5;url=https://tournaiexpertimmo.be">
   <title>${title} — Tournai Expert Immo</title>
   <style>
     body { font-family: Georgia, serif; background: #10212B; color: #EFFBDB;
@@ -209,9 +525,13 @@ function htmlPage(title, message) {
              text-transform: uppercase; color: #8FA464; margin-bottom: 1rem; }
     h1 { font-size: 2rem; font-weight: 300; letter-spacing: -.02em; margin: 0 0 1.5rem; }
     p { font-size: 1rem; font-weight: 300; line-height: 1.8; color: rgba(239,251,219,.7); }
-    a { color: #8FA464; text-decoration: none; font-family: monospace; font-size: .7rem;
-        letter-spacing: .1em; text-transform: uppercase; display: inline-block; margin-top: 2rem;
-        border-bottom: 1px solid #8FA464; padding-bottom: 2px; }
+    .redirect { font-family: monospace; font-size: .6rem; letter-spacing: .1em;
+                text-transform: uppercase; color: rgba(239,251,219,.35); margin-top: 2rem; }
+    @media (prefers-color-scheme: light) {
+      body { background: #C9D8DC; color: #10212B; }
+      p { color: rgba(16,33,43,.65); }
+      .redirect { color: rgba(16,33,43,.35); }
+    }
   </style>
 </head>
 <body>
@@ -219,7 +539,7 @@ function htmlPage(title, message) {
     <div class="label">Tournai Expert Immo</div>
     <h1>${title}</h1>
     <p>${message}</p>
-    <a href="http://tournaiexpertimmo.be">← Retour au site</a>
+    <div class="redirect">Redirection automatique dans 5 secondes…</div>
   </div>
 </body>
 </html>`;

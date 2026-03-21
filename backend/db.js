@@ -38,6 +38,14 @@ db.exec(`
     email          TEXT    NOT NULL,
     telephone      TEXT    NOT NULL,
     adresse_bien   TEXT    NOT NULL,
+    proprietaire       TEXT    NOT NULL DEFAULT '',
+    theme              TEXT    NOT NULL DEFAULT 'dark',  -- 'dark' | 'light'
+
+    -- Bailleur (optionnel)
+    bailleur_prenom    TEXT    NOT NULL DEFAULT '',
+    bailleur_nom       TEXT    NOT NULL DEFAULT '',
+    bailleur_email     TEXT    NOT NULL DEFAULT '',
+    bailleur_telephone TEXT    NOT NULL DEFAULT '',
 
     -- Horodatages
     created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,13 +59,23 @@ db.exec(`
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
+// Migrations
+try { db.exec(`ALTER TABLE appointments ADD COLUMN proprietaire TEXT NOT NULL DEFAULT ''`); } catch (_) {}
+try { db.exec(`ALTER TABLE appointments ADD COLUMN theme TEXT NOT NULL DEFAULT 'dark'`); } catch (_) {}
+try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_prenom TEXT NOT NULL DEFAULT ''`); } catch (_) {}
+try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_nom TEXT NOT NULL DEFAULT ''`); } catch (_) {}
+try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_email TEXT NOT NULL DEFAULT ''`); } catch (_) {}
+try { db.exec(`ALTER TABLE appointments ADD COLUMN bailleur_telephone TEXT NOT NULL DEFAULT ''`); } catch (_) {}
+
 const insertAppointment = db.prepare(`
   INSERT INTO appointments
     (token, category, service, service_label, property, property_label,
-     extras, date, slot, duration, prenom, nom, email, telephone, adresse_bien)
+     extras, date, slot, duration, prenom, nom, email, telephone, adresse_bien, theme,
+     bailleur_prenom, bailleur_nom, bailleur_email, bailleur_telephone)
   VALUES
     (@token, @category, @service, @service_label, @property, @property_label,
-     @extras, @date, @slot, @duration, @prenom, @nom, @email, @telephone, @adresse_bien)
+     @extras, @date, @slot, @duration, @prenom, @nom, @email, @telephone, @adresse_bien, @theme,
+     @bailleur_prenom, @bailleur_nom, @bailleur_email, @bailleur_telephone)
 `);
 
 const getByToken = db.prepare(`
@@ -81,10 +99,18 @@ const getConfirmedOnDate = db.prepare(`
   WHERE date = ? AND status = 'confirmed'
 `);
 
+const rescheduleAppointment = db.prepare(`
+  UPDATE appointments
+  SET date = @date, slot = @slot
+  WHERE token = @token
+`);
+
 module.exports = {
+  db,
   insertAppointment,
   getByToken,
   confirmAppointment,
   rejectAppointment,
   getConfirmedOnDate,
+  rescheduleAppointment,
 };

@@ -35,7 +35,7 @@ body:not(.dark) #bk-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 4rem 1rem 1rem; /* espace en haut pour ne pas percuter la nav */
   opacity: 0;
   pointer-events: none;
   transition: opacity .4s ease;
@@ -51,8 +51,8 @@ body:not(.dark) #bk-overlay {
   color: var(--bk-ink);
   width: 100%;
   max-width: 580px;
-  height: 88vh;
-  max-height: 680px;
+  height: 94vh;
+  max-height: 860px;
   min-height: 480px;
   border-radius: 2px;
   display: flex;
@@ -67,6 +67,7 @@ body:not(.dark) #bk-overlay {
   transform: translateY(0);
   pointer-events: auto;
 }
+
 
 /* ─── Bouton fermer ─── */
 .bk-close {
@@ -124,8 +125,11 @@ body:not(.dark) #bk-overlay {
 }
 .bk-step.active {
   opacity: 1;
-  pointer-events: auto;
   transform: translateX(0);
+}
+/* pointer-events actifs uniquement quand le modal est ouvert */
+.bk-overlay.open .bk-step.active {
+  pointer-events: auto;
 }
 .bk-step.exit-left {
   opacity: 0;
@@ -507,6 +511,51 @@ body:not(.dark) #bk-overlay {
   text-align: center;
 }
 
+.bk-next-day-btn {
+  grid-column: 1 / -1;
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  margin-top: 1.25rem;
+  background: var(--bk-ink);
+  color: var(--bk-bg);
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: .85rem 1.75rem;
+  cursor: pointer;
+  transition: background .25s, opacity .25s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk-next-day-btn:hover { background: var(--bk-accent); }
+.bk-next-day-btn:disabled { opacity: .45; pointer-events: none; }
+.bk-next-day-btn svg { flex-shrink: 0; }
+
+.bk-slots-found {
+  grid-column: 1 / -1;
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.bk-slots-found-label {
+  font-family: 'Space Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--bk-muted);
+}
+.bk-slots-found-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--bk-accent);
+  letter-spacing: .02em;
+}
+
 /* ─── ÉTAPE 6 : Formulaire ─── */
 .bk-form {
   display: flex;
@@ -514,8 +563,7 @@ body:not(.dark) #bk-overlay {
   gap: 1.2rem;
 }
 .bk-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 1rem;
 }
 .bk-field {
@@ -546,6 +594,45 @@ body:not(.dark) #bk-overlay {
 .bk-input:focus { border-color: var(--bk-accent); }
 .bk-input.error { border-color: #c0392b; }
 .bk-input::placeholder { color: var(--bk-muted); font-style: italic; }
+/* Neutraliser la couleur de fond injectée par le navigateur sur les champs autofill */
+.bk-input:-webkit-autofill,
+.bk-input:-webkit-autofill:hover,
+.bk-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #10212B inset !important;
+  -webkit-text-fill-color: #EFFBDB !important;
+  caret-color: #EFFBDB;
+}
+
+/* ─── Étape 6 : mise en page compacte (beaucoup de champs) ─── */
+#bk-step-6 {
+  padding-top: 1.5rem;
+}
+#bk-step-6 .bk-form {
+  gap: .6rem;
+}
+#bk-step-6 .bk-field {
+  gap: .2rem;
+}
+#bk-step-6 .bk-input {
+  padding: .35rem 0;
+  font-size: 1rem;
+}
+#bk-step-6 .bk-form-section-title {
+  padding-top: .4rem;
+  margin-top: .1rem;
+}
+
+/* ─── Séparateur de section dans le formulaire ─── */
+.bk-form-section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--bk-accent);
+  padding-top: .75rem;
+  border-top: 1px solid var(--bk-line);
+  margin-top: .25rem;
+}
 
 /* ─── ÉTAPE 7 : Récapitulatif ─── */
 .bk-summary {
@@ -689,7 +776,7 @@ body:not(.dark) #bk-overlay {
   .bk-footer { padding: 1rem 1.25rem; }
   .bk-cards-grid { grid-template-columns: 1fr; gap: .75rem; }
   .bk-choice-card { padding: 1.25rem 1rem; }
-  .bk-form-row { grid-template-columns: 1fr; }
+  .bk-form-row { flex-direction: column; }
   .bk-slots-grid { grid-template-columns: repeat(3, 1fr); }
   .bk-step-title { font-size: clamp(1.5rem, 6vw, 2rem); margin-bottom: 1.25rem; }
   .bk-cal-day { font-size: .8rem; }

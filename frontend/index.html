@@ -17,9 +17,10 @@
   <a href="#" class="logo" data-page="home">Tournai Expert Immo</a>
   <ul class="nav-links" id="navMenu">
     <li><a href="#" data-page="apropos">À propos</a></li>
-    <li><a href="#" data-page="expertises">Expertises</a></li>
+    <li style="display:none"><a href="#" data-page="expertises">Expertises</a></li>
     <li><a href="#" data-page="etats">États des lieux</a></li>
     <li><a href="#" data-page="tarifs">Tarifs</a></li>
+    <li><a href="#" data-page="rendezvous">Rendez-vous</a></li>
     <li><a href="#" data-page="contact">Contact</a></li>
   </ul>
   <button class="burger" id="burger" aria-label="Menu">
@@ -31,9 +32,10 @@
 <div class="mobile-drawer" id="mobileDrawer">
   <ul>
     <li><a href="#" data-page="apropos">À propos</a></li>
-    <li><a href="#" data-page="expertises">Expertises</a></li>
+    <li style="display:none"><a href="#" data-page="expertises">Expertises</a></li>
     <li><a href="#" data-page="etats">États des lieux</a></li>
     <li><a href="#" data-page="tarifs">Tarifs</a></li>
+    <li><a href="#" data-page="rendezvous">Rendez-vous</a></li>
     <li><a href="#" data-page="contact">Contact</a></li>
   </ul>
   <div class="mobile-drawer-footer">© 2026 Tournai Expert Immo — Tournai, Belgique</div>
@@ -84,26 +86,21 @@
     <h2 class="page-title">Ce que<br>nous <em>faisons</em></h2>
     <p class="services-intro">Le bailleur et le locataire n'éprouvent généralement pas de difficulté à dresser un état des lieux d'entrée. En revanche, l'état des lieux de sortie est souvent source de conflit et de litige. C'est l'objectivité, l'impartialité et l'attention aux détails qui font toute la différence.</p>
     <div class="services-list">
-      <div class="service-row">
+      <button class="service-row bk-trigger" type="button" data-bk-category="etl" data-bk-service="entree">
         <span class="service-num">01</span>
         <span class="service-name">État des lieux d'entrée</span>
         <span class="service-desc">Entrée dans les lieux</span>
-      </div>
-      <div class="service-row">
+      </button>
+      <button class="service-row bk-trigger" type="button" data-bk-category="etl" data-bk-service="sortie">
         <span class="service-num">02</span>
         <span class="service-name">État des lieux de sortie</span>
         <span class="service-desc">Fin de bail</span>
-      </div>
-      <div class="service-row">
+      </button>
+      <button class="service-row bk-trigger" type="button" data-bk-category="etl" data-bk-service="travaux">
         <span class="service-num">03</span>
         <span class="service-name">État des lieux de travaux</span>
         <span class="service-desc">Avant / après chantier</span>
-      </div>
-      <div class="service-row">
-        <span class="service-num">04</span>
-        <span class="service-name">Constat contradictoire</span>
-        <span class="service-desc">Résolution de litige</span>
-      </div>
+      </button>
     </div>
     <div class="page-footer">
       <span>© 2026 TOURNAI EXPERT IMMO</span>
@@ -118,12 +115,9 @@
     <div class="page-label">Tarifs</div>
     <h2 class="page-title">Des tarifs<br><em>transparents</em></h2>
     <p class="tarifs-intro">Chaque mission est tarifée selon la superficie du bien et le type d'intervention. Les prix indiqués sont des fourchettes indicatives — un devis précis vous est remis sur simple demande.</p>
-    <div class="tarifs-note">
-      ⚡ Déplacement inclus dans un rayon de 20 km autour de Tournai — au-delà, frais kilométriques appliqués au tarif en vigueur.
-    </div>
     <div class="tarifs-grid">
 
-      <div class="tarif-card">
+      <button class="tarif-card bk-trigger" type="button" data-bk-category="etl" data-bk-service="entree">
         <div class="tarif-type">Entrée dans les lieux</div>
         <div class="tarif-name">État des lieux<br>d'entrée</div>
         <div class="tarif-divider"></div>
@@ -137,12 +131,12 @@
           Maison 4 ch. : 470 € <em>(235 € / partie)</em><br>
           <br>
           Ch. supplémentaire ou bureau : <em>+25 € / partie</em><br>
-          Meublé : <em>+45 € / partie</em>
+          Meublé : <em>Sur devis</em>
         </div>
-      </div>
+      </button>
 
-      <div class="tarif-card">
-        <div class="tarif-type">Fin de bail — si entrée réalisée par Immo Dev</div>
+      <button class="tarif-card bk-trigger" type="button" data-bk-category="etl" data-bk-service="sortie">
+        <div class="tarif-type">Fin de bail — si entrée réalisée par nous</div>
         <div class="tarif-name">État des lieux<br>de sortie</div>
         <div class="tarif-divider"></div>
         <div class="tarif-price">dès 280<span>€</span></div>
@@ -156,24 +150,26 @@
           <br>
           Ch. supplémentaire, salle d'eau ou bureau : <em>+25 € / partie</em>
         </div>
-      </div>
+      </button>
 
-      <div class="tarif-card">
+      <button class="tarif-card bk-trigger" type="button" data-bk-category="etl" data-bk-service="travaux">
         <div class="tarif-type">Travaux & Litige</div>
         <div class="tarif-name">Travaux &<br>Constat</div>
         <div class="tarif-divider"></div>
         <div class="tarif-price tarif-price--devis">Sur devis</div>
         <div class="tarif-detail">
-          État des lieux avant/après travaux.<br>
-          Constat contradictoire en cas de litige.<br><br>
+          État des lieux avant/après travaux.<br><br>
           Rapport juridiquement recevable,<br>utilisable devant un tribunal ou notaire.
         </div>
-      </div>
+      </button>
 
     </div>
     <p class="tarifs-footer-note">
-      * Le prix total est partagé entre bailleur et locataire. Paiement par virement ou en espèces sur place. Facture remise systématiquement.
+      * Le prix total est partagé entre bailleur et locataire. Paiement par virement minimum 5 jours avant le rendez-vous ou en espèces sur place. Facture remise systématiquement.
     </p>
+    <div class="tarifs-note">
+      ⚡ Déplacement inclus dans un rayon de 20 km autour de Tournai — au-delà, frais kilométriques appliqués au tarif en vigueur.
+    </div>
     <div class="page-footer">
       <span>© 2026 TOURNAI EXPERT IMMO</span>
       <span>Tournai, Belgique</span>
@@ -202,16 +198,8 @@
           <div class="stat-label">Impartialité garantie</div>
         </div>
         <div class="stat">
-          <div class="stat-num">24h</div>
+          <div class="stat-num">48h</div>
           <div class="stat-label">Délai de remise du rapport</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num">4</div>
-          <div class="stat-label">Types d'intervention</div>
-        </div>
-        <div class="stat">
-          <div class="stat-num">3</div>
-          <div class="stat-label">Profils de clients servis</div>
         </div>
       </div>
     </div>
@@ -223,7 +211,7 @@
 </div>
 
 <!-- ═══ PAGE EXPERTISES ═══ -->
-<div class="page" id="page-expertises">
+<div class="page" id="page-expertises" style="display:none">
   <div class="inner-page">
     <div class="page-label">Expertises</div>
     <h2 class="page-title">Nos<br><em>expertises</em></h2>
@@ -257,6 +245,32 @@
   </div>
 </div>
 
+<!-- ═══ PAGE RENDEZ-VOUS ═══ -->
+<div class="page" id="page-rendezvous">
+  <div class="inner-page">
+    <div class="page-label">Rendez-vous</div>
+    <h2 class="page-title">Réservez votre<br><em>intervention</em></h2>
+    <p class="tarifs-intro">Planifiez directement votre état des lieux ou expertise en ligne. Choisissez le créneau qui vous convient — confirmation sous 24h.</p>
+    <div class="rdv-cta-list">
+      <button class="contact-row bk-trigger" type="button">
+        <span class="contact-icon">
+          <svg width="20" height="22" viewBox="0 0 20 22" fill="none">
+            <rect x="1" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.3"/>
+            <line x1="1" y1="8" x2="19" y2="8" stroke="currentColor" stroke-width="1.3"/>
+            <line x1="6" y1="1" x2="6" y2="5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="14" y1="1" x2="14" y2="5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="5" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="5" y1="17" x2="11" y2="17" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="contact-sep">|</span>
+        <span class="contact-val">Prendre rendez-vous</span>
+      </button>
+    </div>
+    <div class="page-footer"><span>© 2026 Tournai Expert Immo</span></div>
+  </div>
+</div>
+
 <!-- ═══ PAGE CONTACT ═══ -->
 <div class="page" id="page-contact">
   <div class="inner-page">
@@ -268,20 +282,20 @@
       </p>
       <div class="contact-list">
 
-        <a href="tel:+32473589891" class="contact-row">
+        <a href="tel:+32476032788" class="contact-row contact-row--tel">
           <span class="contact-icon">
             <svg width="18" height="22" viewBox="0 0 18 22" fill="none"><rect x="2" y="1" width="14" height="20" rx="2.5" stroke="currentColor" stroke-width="1.3"/><line x1="9" y1="17" x2="9" y2="17.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </span>
           <span class="contact-sep">|</span>
-          <span class="contact-val">+32 473/58.98.91</span>
+          <span class="contact-val">+32 476/03.27.88</span>
         </a>
 
-        <a id="mail-link" href="#" class="contact-row">
+        <a id="mail-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=expertimmotournai%40gmail.com&su=Contact%20Tournai%20Expert%20Immo" target="_blank" class="contact-row">
           <span class="contact-icon">
             <svg width="22" height="16" viewBox="0 0 22 16" fill="none"><rect x="1" y="1" width="20" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3"/><polyline points="1,1 11,9.5 21,1" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
           </span>
           <span class="contact-sep">|</span>
-          <span class="contact-val" id="mail-val"></span>
+          <span class="contact-val" id="mail-val">expertimmotournai@gmail.com</span>
         </a>
 
         <a href="https://maps.google.com/?q=159+Rue+Saint-Eleuth%C3%A8re+7500+Tournai+Belgique" target="_blank" class="contact-row">
@@ -339,7 +353,7 @@
         <div class="bk-step-lbl">01 &mdash; Prestation</div>
         <h3 class="bk-step-title">Quelle prestation<br>souhaitez-vous&nbsp;?</h3>
         <div class="bk-cards-grid">
-          <button class="bk-choice-card" data-category="expertise">
+          <button class="bk-choice-card" data-category="expertise" style="display:none">
             <span class="bk-choice-icon">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.3"/><line x1="24" y1="24" x2="18.6" y2="18.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </span>
@@ -401,30 +415,66 @@
 
       <!-- ÉTAPE 6 : Coordonnées -->
       <div class="bk-step" id="bk-step-6">
-        <div class="bk-step-lbl">06 &mdash; Coordonnées</div>
-        <h3 class="bk-step-title">Pour vous<br>contacter</h3>
+        <div class="bk-step-header-inline"><div class="bk-step-lbl">06 &mdash; Coordonnées</div><h3 class="bk-step-title">Pour vous contacter</h3></div>
         <form class="bk-form" id="bk-form" novalidate>
+          <div class="bk-form-section-title">Locataire</div>
           <div class="bk-form-row">
             <div class="bk-field">
-              <label class="bk-label">Prénom *</label>
+              <label class="bk-label">Prénom</label>
               <input class="bk-input" type="text" name="prenom" autocomplete="given-name" required>
             </div>
             <div class="bk-field">
-              <label class="bk-label">Nom *</label>
+              <label class="bk-label">Nom</label>
               <input class="bk-input" type="text" name="nom" autocomplete="family-name" required>
             </div>
           </div>
           <div class="bk-field">
-            <label class="bk-label">Email *</label>
+            <label class="bk-label">Email</label>
             <input class="bk-input" type="email" name="email" autocomplete="email" required>
           </div>
           <div class="bk-field">
-            <label class="bk-label">Téléphone *</label>
+            <label class="bk-label">Téléphone</label>
             <input class="bk-input" type="tel" name="telephone" autocomplete="tel" required>
           </div>
+          <div class="bk-form-section-title">Bailleur</div>
+          <div class="bk-form-row">
+            <div class="bk-field">
+              <label class="bk-label">Prénom</label>
+              <input class="bk-input" type="text" name="bailleur_prenom" autocomplete="off" data-optional="true">
+            </div>
+            <div class="bk-field">
+              <label class="bk-label">Nom</label>
+              <input class="bk-input" type="text" name="bailleur_nom" autocomplete="off" data-optional="true">
+            </div>
+          </div>
           <div class="bk-field">
-            <label class="bk-label">Adresse du bien *</label>
-            <input class="bk-input" type="text" name="adresse_bien" placeholder="Rue, n°, code postal, ville" required>
+            <label class="bk-label">Email</label>
+            <input class="bk-input" type="email" name="bailleur_email" autocomplete="off">
+          </div>
+          <div class="bk-field">
+            <label class="bk-label">Téléphone</label>
+            <input class="bk-input" type="tel" name="bailleur_telephone" autocomplete="off" data-optional="true">
+          </div>
+          <div class="bk-form-section-title">Adresse du bien</div>
+          <div class="bk-form-row">
+            <div class="bk-field" style="flex:3">
+              <label class="bk-label">Rue</label>
+              <input class="bk-input" type="text" name="rue" autocomplete="off" placeholder="Rue des Exemples" required>
+            </div>
+            <div class="bk-field" style="flex:1">
+              <label class="bk-label">N°</label>
+              <input class="bk-input" type="text" name="numero" autocomplete="off" placeholder="12A" required>
+            </div>
+          </div>
+          <div class="bk-form-row">
+            <div class="bk-field" style="flex:1">
+              <label class="bk-label">Code postal</label>
+              <input class="bk-input" type="text" name="code_postal" autocomplete="postal-code" placeholder="7500" required>
+            </div>
+            <div class="bk-field" style="flex:2">
+              <label class="bk-label">Ville</label>
+              <input class="bk-input" type="text" name="ville" autocomplete="address-level2" placeholder="Tournai" required>
+            </div>
           </div>
         </form>
       </div>
@@ -460,6 +510,6 @@
   </div><!-- /.bk-panel -->
 </div><!-- /#bk-overlay -->
 <script src="main.js?v=24"></script>
-<script src="booking.js?v=24"></script>
+<script src="booking.js?v=25"></script>
 </body>
 </html>

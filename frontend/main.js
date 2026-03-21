@@ -2,6 +2,9 @@
   const burger = document.getElementById('burger');
   const drawer = document.getElementById('mobileDrawer');
 
+  // true dès que l'utilisateur a manuellement changé le thème
+  let userToggled = false;
+
   function switchPage(targetId, pushState = true) {
     const current = document.querySelector('.page.active');
     const target  = document.getElementById('page-' + targetId);
@@ -13,6 +16,15 @@
 
     target.classList.add('active');
     target.scrollTop = 0;
+
+    // Thème : défaut par page sauf si l'utilisateur a déjà togglé
+    if (!userToggled) {
+      if (targetId === 'home') {
+        document.body.classList.remove('dark');
+      } else {
+        document.body.classList.add('dark');
+      }
+    }
 
     // Nav style selon la page
     nav.classList.remove('hidden');
@@ -86,7 +98,14 @@
   });
 
   // Bouton retour Android
+  // Si le modal de réservation est ouvert → le fermer au lieu de naviguer
   window.addEventListener('popstate', (e) => {
+    const bkOverlay = document.getElementById('bk-overlay');
+    if (bkOverlay && bkOverlay.classList.contains('open')) {
+      bkOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+      return;
+    }
     const pageId = e.state?.page || 'home';
     switchPage(pageId, false);
   });
@@ -94,17 +113,19 @@
   // État initial de la page home dans l'historique
   history.replaceState({ page: 'home' }, '', '#home');
 
-  // Email anti-spam
+  // Email — ouvre Gmail compose directement dans le navigateur
   const mailLink = document.getElementById('mail-link');
   const mailVal  = document.getElementById('mail-val');
   if (mailLink && mailVal) {
     const email = 'expertimmotournai' + '@' + 'gmail.com';
-    mailLink.href = 'mailto:' + email;
+    mailLink.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + email + '&su=Contact%20Tournai%20Expert%20Immo';
+    mailLink.target = '_blank';
     mailVal.textContent = email;
   }
 
   // Theme toggle
   document.getElementById('themeToggle').addEventListener('click', () => {
+    userToggled = true;
     document.body.classList.toggle('dark');
   });
 
@@ -113,10 +134,23 @@
     p.addEventListener('touchstart', () => {}, { passive: true });
   });
 
+  // ─── Alignement dynamique bandeau nav sur bord gauche du hero-sketch ───
+  function alignNavBand() {
+    const sketch = document.querySelector('.hero-sketch');
+    const logo   = document.querySelector('.logo');
+    if (!sketch || !logo) return;
+    const left = sketch.getBoundingClientRect().left;
+    logo.style.width = left + 'px';
+  }
+  alignNavBand();
+  window.addEventListener('resize', alignNavBand);
+
   // Fix Safari/WebKit : force la navigation sur les <a>.contact-row
+  // Les liens mailto: sont laissés au navigateur (ouverture messagerie native)
   document.querySelectorAll('a.contact-row').forEach(function(row) {
     row.addEventListener('click', function(e) {
       if (!row.href) return;
+      if (row.href.startsWith('mailto:')) return; // laisser le navigateur gérer
       e.preventDefault();
       if (row.target === '_blank') {
         window.open(row.href, '_blank');

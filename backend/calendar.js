@@ -110,7 +110,9 @@ async function getAvailableSlots(dateStr, duration) {
 // ─── Créer un événement dans Google Calendar ─────────────────────
 async function createCalendarEvent({ date, slot, duration, prenom, nom, email,
                                      telephone, service_label, property_label,
-                                     extras, adresse_bien }) {
+                                     extras, adresse_bien,
+                                     bailleur_prenom, bailleur_nom,
+                                     bailleur_email, bailleur_telephone }) {
   const auth    = getOAuthClient();
   const calendar = google.calendar({ version: 'v3', auth });
 
@@ -120,6 +122,14 @@ async function createCalendarEvent({ date, slot, duration, prenom, nom, email,
 
   const extrasArr = typeof extras === "string" ? JSON.parse(extras || "[]") : (extras || []);
   const extrasStr = extrasArr && extrasArr.length ? `\nOptions : ${extrasArr.join(', ')}` : '';
+
+  const bailleurLines = bailleur_email ? [
+    ``,
+    `Bailleur : ${bailleur_prenom || ''} ${bailleur_nom || ''}`.trim(),
+    `Email bailleur : ${bailleur_email}`,
+    bailleur_telephone ? `Tél. bailleur : ${bailleur_telephone}` : '',
+  ].filter(l => l !== null) : [];
+
   const description = [
     `Prestation : ${service_label}`,
     `Bien : ${property_label}${extrasStr}`,
@@ -128,6 +138,7 @@ async function createCalendarEvent({ date, slot, duration, prenom, nom, email,
     `Client : ${prenom} ${nom}`,
     `Email : ${email}`,
     `Tél. : ${telephone}`,
+    ...bailleurLines,
   ].join('\n');
 
   const event = await calendar.events.insert({
@@ -157,4 +168,51 @@ async function createCalendarEvent({ date, slot, duration, prenom, nom, email,
   return event.data.id;
 }
 
-module.exports = { getAvailableSlots, createCalendarEvent };
+// ─── Mettre à jour un événement Google Calendar existant ─────────
+async function updateCalendarEvent(gcalId, { date, slot, duration, prenom, nom, email,
+                                             telephone, service_label, property_label,
+                                             extras, adresse_bien,
+                                             bailleur_prenom, bailleur_nom,
+                                             bailleur_email, bailleur_telephone }) {
+  const auth     = getOAuthClient();
+  const cal      = google.calendar({ version: 'v3', auth });
+
+  const [h, m]   = slot.split(':').map(Number);
+  const startDt  = new Date(`${date}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00+01:00`);
+  const endDt    = new Date(startDt.getTime() + duration * 60 * 1000);
+
+  const extrasArr = typeof extras === 'string' ? JSON.parse(extras || '[]') : (extras || []);
+  const extrasStr = extrasArr.length ? `\nOptions : ${extrasArr.join(', ')}` : '';
+
+  const bailleurLines = bailleur_email ? [
+    ``,
+    `Bailleur : ${bailleur_prenom || ''} ${bailleur_nom || ''}`.trim(),
+    `Email bailleur : ${bailleur_email}`,
+    bailleur_telephone ? `Tél. bailleur : ${bailleur_telephone}` : '',
+  ].filter(l => l !== null) : [];
+
+  const description = [
+    `Prestation : ${service_label}`,
+    `Bien : ${property_label}${extrasStr}`,
+    `Adresse du bien : ${adresse_bien}`,
+    ``,
+    `Client : ${prenom} ${nom}`,
+    `Email : ${email}`,
+    `Tél. : ${telephone}`,
+    ...bailleurLines,
+  ].join('\n');
+
+  await cal.events.patch({
+    calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+    eventId:    gcalId,
+    requestBody: {
+      summary: `RDV — ${service_label} (${prenom} ${nom})`,
+      description,
+      start: { dateTime: startDt.toISOString(), timeZone: 'Europe/Brussels' },
+      end:   { dateTime: endDt.toISOString(),   timeZone: 'Europe/Brussels' },
+      location: adresse_bien,
+    },
+  });
+}
+
+module.exports = { getAvailableSlots, createCalendarEvent, updateCalendarEvent };
