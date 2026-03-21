@@ -518,6 +518,20 @@ body.dark .tarif-card:hover .tarif-divider    { background: rgba(39,62,70,.2); }
   line-height: 1.8; margin-top: 1rem;
 }
 
+/* ─── Tarifs : page complète sans scroll ─── */
+#page-tarifs .inner-page      { padding-top: 4rem; padding-bottom: 2rem; }
+#page-tarifs .page-title      { font-size: clamp(2rem,4vw,4rem); margin-bottom: 1.5rem; }
+#page-tarifs .tarifs-intro    { font-size: .9rem; margin-bottom: 1.5rem; }
+#page-tarifs .tarifs-grid     { margin-bottom: .75rem; }
+#page-tarifs .tarif-name      { font-size: clamp(1.1rem,1.5vw,1.5rem); margin-bottom: .4rem; }
+#page-tarifs .tarif-divider   { margin: .5rem 0; }
+#page-tarifs .tarif-price     { font-size: clamp(1.6rem,2.5vw,2.5rem); margin-bottom: .25rem; }
+#page-tarifs .tarif-price--devis { font-size: clamp(1.4rem,2vw,2rem); }
+#page-tarifs .tarif-detail    { font-size: .78rem; line-height: 1.7; margin-top: .4rem; }
+#page-tarifs .tarifs-footer-note { margin-top: .5rem; line-height: 1.6; }
+#page-tarifs .tarifs-note     { margin-bottom: .5rem; }
+#page-tarifs .tarif-card      { padding: 1.5rem; }
+
 /* ═══════════════════════════════
    PAGE À PROPOS
 ═══════════════════════════════ */

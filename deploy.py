@@ -74,6 +74,7 @@ def deploy_frontend(ssh):
     files = [
         ('frontend/booking.js',  f'{REMOTE}/frontend/booking.js'),
         ('frontend/booking.css', f'{REMOTE}/frontend/booking.css'),
+        ('frontend/style.css',   f'{REMOTE}/frontend/style.css'),
         ('frontend/index.html',  f'{REMOTE}/frontend/index.html'),
     ]
     for local, remote in files:
