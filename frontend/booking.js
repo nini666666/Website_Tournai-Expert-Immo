@@ -389,9 +389,10 @@
       // Dernier créneau = 11h30 → bloquer si avant minBooking
       const lastSlot  = new Date(year, month, d, 11, 30, 0);
       const isTooSoon = lastSlot < minBooking;
+      const isSunday  = date.getDay() === 0;
 
       let cls = 'bk-cal-day';
-      if (isPast || isTooSoon) cls += ' disabled';
+      if (isPast || isTooSoon || isSunday) cls += ' disabled';
       if (isToday)    cls += ' today';
       if (isSelected) cls += ' selected';
 

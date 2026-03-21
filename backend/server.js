@@ -87,7 +87,8 @@ function generateFallbackSlots(duration, date) {
     if (endMin > endH * 60) break;
     const timeStr  = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
     const slotStart = new Date(`${date}T${timeStr}:00+01:00`);
-    slots.push({ time: timeStr, available: slotStart >= minBookingTime });
+    const available = slotStart.getDay() !== 0 && slotStart >= minBookingTime;
+    slots.push({ time: timeStr, available });
     m += 90;
     if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
   }

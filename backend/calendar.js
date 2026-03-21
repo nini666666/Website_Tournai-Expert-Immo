@@ -87,6 +87,9 @@ function isSlotFree(timeStr, duration, busyPeriods, dateStr, timezone = 'Europe/
   const slotStart = new Date(`${dateStr}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00+01:00`);
   const slotEnd   = new Date(slotStart.getTime() + duration * 60 * 1000);
 
+  // Dimanche : pas de travail
+  if (slotStart.getDay() === 0) return false;
+
   // Minimum 72h de délai avant réservation
   const minBookingTime = new Date(Date.now() + 72 * 60 * 60 * 1000);
   if (slotStart < minBookingTime) return false;
