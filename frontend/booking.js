@@ -584,9 +584,11 @@
   /* ─── Étape 6 : Options formulaire selon le service ─── */
 
   function renderFormOptions() {
-    const bailleurSection = document.getElementById('bk-bailleur-section');
-    // Section bailleur masquée pour ETL travaux (pas de bailleur/locataire)
-    bailleurSection.style.display = (state.service === 'travaux') ? 'none' : '';
+    const isTravaux = state.service === 'travaux';
+    // Section bailleur masquée pour ETL travaux
+    document.getElementById('bk-bailleur-section').style.display = isTravaux ? 'none' : '';
+    // Titre client adapté selon le service
+    document.getElementById('bk-client-role-label').textContent = isTravaux ? 'Propriétaire' : 'Locataire';
   }
 
   /* ─── Navigation (Next / Back) ─── */
