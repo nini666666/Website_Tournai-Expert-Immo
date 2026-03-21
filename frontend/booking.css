@@ -465,10 +465,10 @@ body:not(.dark) #bk-overlay {
 
 /* ─── ÉTAPE 5 : Navigation jour ─── */
 .bk-day-nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: .75rem;
   margin-bottom: 1.25rem;
   border-bottom: 1px solid var(--bk-line);
   padding-bottom: 1rem;
@@ -478,7 +478,6 @@ body:not(.dark) #bk-overlay {
   border: 1px solid var(--bk-line);
   color: var(--bk-ink);
   width: 32px; height: 32px;
-  flex-shrink: 0;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: border-color .25s, color .25s;
@@ -494,7 +493,6 @@ body:not(.dark) #bk-overlay {
   letter-spacing: .01em;
   color: var(--bk-ink);
   text-align: center;
-  flex: 1;
 }
 
 /* ─── ÉTAPE 5 : Créneaux ─── */
