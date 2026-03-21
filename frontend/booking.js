@@ -176,6 +176,7 @@
     if (n === 3) renderProperties();
     if (n === 4) renderCalendar();
     if (n === 5) renderSlots();
+    if (n === 6) renderFormOptions();
     if (n === 7) renderSummary();
   }
 
@@ -578,6 +579,14 @@
         <span class="bk-summary-key">${r.key}</span>
         <span class="bk-summary-val">${r.val}</span>
       </div>`).join('');
+  }
+
+  /* ─── Étape 6 : Options formulaire selon le service ─── */
+
+  function renderFormOptions() {
+    const bailleurSection = document.getElementById('bk-bailleur-section');
+    // Section bailleur masquée pour ETL travaux (pas de bailleur/locataire)
+    bailleurSection.style.display = (state.service === 'travaux') ? 'none' : '';
   }
 
   /* ─── Navigation (Next / Back) ─── */
