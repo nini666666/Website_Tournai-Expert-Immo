@@ -99,13 +99,11 @@ const getConfirmedOnDate = db.prepare(`
   WHERE date = ? AND status = 'confirmed'
 `);
 
-// Inclut les pending < 12h pour bloquer le créneau dès la soumission
+// Pending < 12h uniquement — les confirmed sont gérés par Google Calendar
+// (si supprimé manuellement dans GCal, le créneau redevient libre automatiquement)
 const getPendingOrConfirmedOnDate = db.prepare(`
   SELECT slot, duration FROM appointments
-  WHERE date = ? AND (
-    status = 'confirmed'
-    OR (status = 'pending' AND created_at > datetime('now', '-12 hours'))
-  )
+  WHERE date = ? AND status = 'pending' AND created_at > datetime('now', '-12 hours')
 `);
 
 const rescheduleAppointment = db.prepare(`
